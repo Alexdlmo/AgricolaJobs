@@ -1,0 +1,168 @@
+.home {
+    min-height: 100vh
+}
+
+.hero {
+    background: linear-gradient(135deg, #2d5016, #4a7c22);
+    padding: 6rem 1.5rem;
+    text-align: center;
+    color: #fff
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto
+}
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: .95
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: .875rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none
+}
+
+.btn-primary {
+    background: #8bc34a;
+    color: #1b5e20
+}
+
+.btn-primary:hover {
+    background: #9ccc65
+}
+
+.btn-secondary {
+    background: #f97316;
+    color: #fff;
+    border: 2px solid #f97316
+}
+
+.btn-secondary:hover {
+    background: #ea580c
+}
+
+.features {
+    padding: 4rem 1.5rem;
+    background: #f1f8e9
+}
+
+.features-container {
+    max-width: 1000px;
+    margin: 0 auto
+}
+
+.features-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #2d5016
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem
+}
+
+.feature-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .08)
+}
+
+.feature-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem
+}
+
+.feature-card h3 {
+    color: #2d5016;
+    margin-bottom: 1rem
+}
+
+.feature-card ul {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 1.5rem
+}
+
+.feature-card li {
+    padding: .5rem 0;
+    border-bottom: 1px solid #e8f5e9
+}
+
+.feature-card li::before {
+    content: "✓ ";
+    color: #4a7c22
+}
+
+.btn-feature {
+    display: inline-block;
+    background: #2d5016;
+    color: #fff;
+    padding: .75rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600
+}
+
+.btn-feature:hover {
+    background: #3d6a1f
+}
+
+.about {
+    padding: 4rem 1.5rem;
+    background: #fff
+}
+
+.about-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center
+}
+
+.about-container h2 {
+    color: #2d5016;
+    margin-bottom: 1rem
+}
+
+.about-container p {
+    margin-bottom: 1rem;
+    line-height: 1.7
+}
+
+@media(max-width:600px) {
+    .hero-content h1 {
+        font-size: 1.75rem
+    }
+
+    .hero-buttons {
+        flex-direction: column
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        text-align: center
+    }
+}

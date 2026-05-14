@@ -1,0 +1,53 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router--dom'
+import './Login..css'
+
+function Login() {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [error, setError] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setError('')
+    
+    if (!formData.email || !formData.password) {
+      setError('Completa todos los campos')return
+    }
+    
+    const users = JSON. parse(localStorage. getItem('agricolaJobsUsers') || '[]')
+    const user = users. find(u => u. email === formData. email && u. password === formData. password)
+    
+    if (user) {
+      localStorage. setItem('agricolaJobsUser', JSON. stringify(user))
+      navigate('/dashboard')
+    } else {
+      setError('Email o contraseña incorrectos')
+    }
+  }
+
+  return (
+    <div className="auth-page">
+      <div className="auth-container">
+        <h1>Iniciar sesión</h1>
+        <p className="auth-subtitle">Accede a tu cuenta de Agrícola Jobs</p>
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">            
+            <label>Email</label>            
+            <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="tu@email.com" />
+          </div>          
+          <div className="form-group">
+            <label>Contraseña</label>
+            <input type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="••••••••" />
+          </div>
+          <button type="submit" className="btn-submit">Entrar</button>
+        </form>
+        
+        <p className="auth-footer">          
+          ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+        </p>
+      </div>
+    </div>  )}export default Login

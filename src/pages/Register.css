@@ -1,0 +1,256 @@
+.register-container {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+  font-size: 2rem;
+}
+
+.logo-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d5016;
+  letter-spacing: -0.5px;
+}
+
+.role-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: #f5f5f5;
+  padding: 0.375rem;
+  border-radius: 12px;
+  margin-bottom: 1.75rem;
+}
+
+.role-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #666;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.role-tab:hover {
+  color: #2d5016;
+}
+
+.role-tab.active {
+  background: #fff;
+  color: #2d5016;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 4px;
+  background: #e5e5e5;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.strength-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.input-validation {
+  position: absolute;
+  right: 2.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.input-validation.valid {
+  color: #22c55e;
+}
+
+.input-validation.invalid {
+  color: #ef4444;
+}
+
+.terms-group {
+  margin-top: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+  background: #2d5016;
+  border-color: #2d5016;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+  content: '✓';
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.checkbox-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.checkbox-text a {
+  color: #2d5016;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.checkbox-text a:hover {
+  color: #4a7c22;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.input-icon {
+  font-size: 1.25rem;
+  color: #666;
+  min-width: 24px;
+  text-align: center;
+}
+
+.input-with-icon input {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.input-with-icon input:focus {
+  outline: none;
+  border-color: #4a7c22;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(74, 124, 34, 0.1);
+}
+
+.input-with-icon:focus-within .input-icon {
+  color: #4a7c22;
+}
+
+.input-with-icon input::placeholder {
+  color: #bbb;
+}
+
+.input-with-icon input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.input-validation {
+  position: absolute;
+  right: 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.input-validation.valid {
+  color: #22c55e;
+}
+
+.input-validation.invalid {
+  color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .register-container {
+    padding: 1rem;
+  }
+
+  .role-tab {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .checkbox-text {
+    font-size: 0.8rem;
+  }
+}
