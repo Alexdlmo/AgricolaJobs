@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSession, logout, getAllUsers, deleteUser, getAllOffers, deleteOffer, updateOfferStatus, isAdmin, createOffer } from '../utils/authService'
+import { getDashboardStats } from '../utils/apiService'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
@@ -13,6 +14,7 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [showOfferForm, setShowOfferForm] = useState(false)
   const [offerFormData, setOfferFormData] = useState({ title: '', description: '', location: '', salary: '' })
+  const [pythonStats, setPythonStats] = useState(null)
 
   const loadData = async () => {
     setLoading(true)
@@ -21,6 +23,11 @@ function AdminDashboard() {
       const allOffers = await getAllOffers()
       setUsers(allUsers)
       setOffers(allOffers)
+
+      const stats = await getDashboardStats()
+      if (stats && !stats.error) {
+        setPythonStats(stats)
+      }
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -103,15 +110,20 @@ function AdminDashboard() {
     )
   }
 
-  const filteredUsers = users.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredUsers = users.filter(u => {
+    if (searchTerm === 'worker') return u.role === 'worker'
+    if (searchTerm === 'company') return u.role === 'company'
+    if (searchTerm === 'admin') return u.role === 'admin'
+    return u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  })
 
-  const filteredOffers = offers.filter(o => 
-    o.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (o.companyName && o.companyName.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
+  const filteredOffers = offers.filter(o => {
+    if (searchTerm === 'active') return o.status === 'active'
+    if (searchTerm === 'inactive') return o.status === 'inactive'
+    return o.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (o.companyName && o.companyName.toLowerCase().includes(searchTerm.toLowerCase()))
+  })
 
   const stats = {
     totalUsers: users.length,
@@ -185,42 +197,46 @@ function AdminDashboard() {
 
         {activeTab === 'stats' && (
           <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">👥</div>
-              <div className="stat-info">
-                <span className="stat-number">{stats.totalUsers}</span>
-                <span className="stat-label">Total Usuarios</span>
+            {pythonStats && (
+              <div className="stat-card python-stat clickable" onClick={() => setActiveTab('users')}>
+                <div className="stat-icon">👥</div>
+                <div className="stat-info">
+                  <span className="stat-number">{pythonStats.total_users || 0}</span>
+                  <span className="stat-label">Usuarios (Python API)</span>
+                </div>
               </div>
-            </div>
-            <div className="stat-card">
+            )}
+            <div className="stat-card clickable" onClick={() => { setActiveTab('users'); setSearchTerm('worker'); }}>
               <div className="stat-icon">👨‍🌾</div>
               <div className="stat-info">
                 <span className="stat-number">{stats.workers}</span>
                 <span className="stat-label">Trabajadores</span>
               </div>
             </div>
-            <div className="stat-card">
+            <div className="stat-card clickable" onClick={() => { setActiveTab('users'); setSearchTerm('company'); }}>
               <div className="stat-icon">🏢</div>
               <div className="stat-info">
                 <span className="stat-number">{stats.companies}</span>
                 <span className="stat-label">Empresas</span>
               </div>
             </div>
-            <div className="stat-card">
-              <div className="stat-icon">📋</div>
-              <div className="stat-info">
-                <span className="stat-number">{stats.totalOffers}</span>
-                <span className="stat-label">Total Ofertas</span>
+            {pythonStats && (
+              <div className="stat-card python-stat clickable" onClick={() => setActiveTab('offers')}>
+                <div className="stat-icon">🐍</div>
+                <div className="stat-info">
+                  <span className="stat-number">{pythonStats.total_offers || 0}</span>
+                  <span className="stat-label">Ofertas (Python API)</span>
+                </div>
               </div>
-            </div>
-            <div className="stat-card">
+            )}
+            <div className="stat-card clickable" onClick={() => { setActiveTab('offers'); setSearchTerm('active'); }}>
               <div className="stat-icon">✅</div>
               <div className="stat-info">
                 <span className="stat-number">{stats.activeOffers}</span>
                 <span className="stat-label">Ofertas Activas</span>
               </div>
             </div>
-            <div className="stat-card">
+            <div className="stat-card clickable" onClick={() => { setActiveTab('offers'); setSearchTerm('inactive'); }}>
               <div className="stat-icon">⏸️</div>
               <div className="stat-info">
                 <span className="stat-number">{stats.inactiveOffers}</span>

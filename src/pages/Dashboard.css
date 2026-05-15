@@ -172,6 +172,28 @@
   font-size: 0.9rem;
 }
 
+.python-stat {
+  border-left: 4px solid #3776ab;
+}
+
+.python-stats-bar {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f0f7ff 100%);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.python-stat-item {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.python-stat-item strong {
+  color: #2d5016;
+}
+
 .section-card {
   background: #fff;
   padding: 2rem;
