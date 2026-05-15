@@ -1,16 +1,45 @@
-# React + Vite
+# AgriculturalJobs
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma web para la búsqueda y gestión de ofertas de trabajo en el sector agrícola.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend**: React 19 + Vite
+- **Backend**: Supabase (Base de datos y autenticación)
+- **Routing**: React Router DOM
+- **Estilos**: CSS
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Instalar dependencias
+npm install
 
-## Expanding the ESLint configuration
+# Iniciar servidor de desarrollo
+npm run dev
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Build para producción
+npm run build
+
+# Preview del build
+npm run preview
+```
+
+## Estructura del Proyecto
+
+```
+src/
+├── components/     # Componentes reutilizables
+├── pages/          # Páginas de la aplicación
+├── utils/          # Utilidades (auth, supabase client)
+├── App.jsx         # Componente principal
+└── main.jsx        # Punto de entrada
+```
+
+## Características
+
+- Registro y autenticación de usuarios
+- Ofertas de trabajo agrícolas
+- Dashboard de usuario
+- Panel de administración
+- Perfiles de usuario
