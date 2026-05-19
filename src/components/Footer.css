@@ -1,8 +1,8 @@
 .footer {
-    background: #ffa726;
-    padding: 3rem 0 1rem;
+    background: linear-gradient(135deg, #2d5016 0%, #1b3009 100%);
+    padding: 4rem 0 1.5rem;
     margin-top: auto;
-    color: #1b5e20
+    color: #fff
 }
 
 .footer-container {
@@ -10,35 +10,96 @@
     margin: 0 auto;
     padding: 0 1.5rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem
 }
 
-.footer-section h3 {
-    margin-bottom: .5rem;
-    font-size: 1.3rem
+.footer-brand p {
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+    margin-top: 1rem;
+    font-size: 0.95rem
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700
+}
+
+.footer-logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain
 }
 
 .footer-section h4 {
-    margin-bottom: 1rem;
-    color: #1b5e20
+    margin-bottom: 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff
 }
 
-.footer-section a {
-    display: block;
-    color: #1b5e20;
+.footer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem
+}
+
+.footer-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
-    margin-bottom: .5rem
+    font-size: 0.95rem;
+    transition: all 0.2s ease
 }
 
-.footer-section a:hover {
+.footer-nav a:hover {
+    color: #fff;
+    transform: translateX(4px)
+}
+
+.footer-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem
+}
+
+.footer-contact a, .footer-contact span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+    text-decoration: none
+}
+
+.footer-contact a:hover {
     color: #fff
 }
 
 .footer-bottom {
     text-align: center;
     padding-top: 2rem;
-    margin-top: 2rem;
-    border-top: 1px solid #e65100;
-    font-size: .9rem
+    margin-top: 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5)
+}
+
+@media (max-width: 900px) {
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr)
+    }
+}
+
+@media (max-width: 600px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 2rem
+    }
 }

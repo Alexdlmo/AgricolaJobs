@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { getSession, logout, getAllOffers, getOffersByCompany, createOffer, createNotification, getNotifications, markNotificationAsRead, deleteOffer, deleteNotification, deleteAllNotifications } from '../utils/authService'
+import { useAuth } from '../context/AuthContext'
+import { getAllOffers, getOffersByCompany, createOffer, createNotification, getNotifications, markNotificationAsRead, deleteOffer, deleteNotification, deleteAllNotifications } from '../utils/authService'
+import { BarChart3, FileText, Plus, Eye, CheckCircle, User, Wheat, MapPin, DollarSign, Search, Bell, ClipboardList } from 'lucide-react'
 import './Dashboard.css'
 
 function Dashboard() {
   const navigate = useNavigate()
-  const [user, setUser] = useState(null)
+  const { user, logout, isAuthenticated } = useAuth()
   const [offers, setOffers] = useState([])
   const [userOffers, setUserOffers] = useState([])
   const [activeTab, setActiveTab] = useState('overview')
@@ -17,20 +19,18 @@ function Dashboard() {
   const [notifications, setNotifications] = useState([])
 
   useEffect(() => {
-    const session = getSession()
-    if (!session) {
+    if (!isAuthenticated) {
       navigate('/login')
       return
     }
     
-    if (session.role === 'admin') {
+    if (user?.role === 'admin') {
       navigate('/admin')
       return
     }
     
-    setUser(session)
-    loadData(session)
-  }, [navigate])
+    loadData(user)
+  }, [navigate, isAuthenticated, user])
 
   const loadData = async (session) => {
     setLoading(true)
@@ -281,40 +281,40 @@ function Dashboard() {
                 className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
-                📊 Resumen
+                <BarChart3 size={18} /> Resumen
               </button>
               <button 
                 className={`nav-item ${activeTab === 'offers' ? 'active' : ''}`}
                 onClick={() => setActiveTab('offers')}
               >
-                📋 Mis ofertas
+                <FileText size={18} /> Mis ofertas
               </button>
               <button 
                 className={`nav-item ${activeTab === 'create' ? 'active' : ''}`}
                 onClick={() => setActiveTab('create')}
               >
-                ➕ Publicar
+                <Plus size={18} /> Publicar
               </button>
             </div>
 
             {activeTab === 'overview' && (
               <div className="dashboard-grid">
                 <div className="stat-card">
-                  <div className="stat-icon">📋</div>
+                  <div className="stat-icon"><FileText size={24} /></div>
                   <div className="stat-info">
                     <span className="stat-number">{userOffers.length}</span>
                     <span className="stat-label">Ofertas publicadas</span>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">👁️</div>
+                  <div className="stat-icon"><Eye size={24} /></div>
                   <div className="stat-info">
                     <span className="stat-number">{offers.length}</span>
                     <span className="stat-label">Total ofertas</span>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">✅</div>
+                  <div className="stat-icon"><CheckCircle size={24} /></div>
                   <div className="stat-info">
                     <span className="stat-number">{getTotalApplicants()}</span>
                     <span className="stat-label">interesados</span>
@@ -328,7 +328,7 @@ function Dashboard() {
                 <h2>Mis ofertas publicadas</h2>
                 {userOffers.length === 0 ? (
                   <div className="empty-state">
-                    <span className="empty-icon">📋</span>
+                    <span className="empty-icon"><FileText size={48} /></span>
                     <p>No tienes ofertas publicadas</p>
                     <button className="btn-primary" onClick={() => setActiveTab('create')}>
                       Publicar primera oferta
@@ -479,25 +479,25 @@ function Dashboard() {
                 className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
-                🔍 Buscar empleo
+                <Search size={18} /> Buscar empleo
               </button>
               <button 
                 className={`nav-item ${activeTab === 'applications' ? 'active' : ''}`}
                 onClick={() => setActiveTab('applications')}
               >
-                📄 Mis solicitudes
+                <ClipboardList size={18} /> Mis solicitudes
               </button>
               <button 
                 className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
                 onClick={() => setActiveTab('notifications')}
               >
-                🔔 Notificaciones {notifications.filter(n => !n.read).length > 0 && `(${notifications.filter(n => !n.read).length})`}
+                <Bell size={18} /> Notificaciones {notifications.filter(n => !n.read).length > 0 && `(${notifications.filter(n => !n.read).length})`}
               </button>
               <button 
                 className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
               >
-                👤 Mi perfil
+                <User size={18} /> Mi perfil
               </button>
             </div>
 
@@ -506,7 +506,7 @@ function Dashboard() {
                 <h2>Ofertas disponibles</h2>
                 {offers.length === 0 ? (
                   <div className="empty-state">
-                    <span className="empty-icon">🌾</span>
+                    <span className="empty-icon"><Wheat size={48} /></span>
                     <p>No hay ofertas disponibles en este momento</p>
                     <p className="empty-subtitle">Vuelve más tarde</p>
                   </div>
@@ -515,8 +515,8 @@ function Dashboard() {
                     {offers.map(offer => (
                       <div key={offer.id} className="offer-card">
                         <h3>{offer.title}</h3>
-                        <p className="offer-location">📍 {offer.location}</p>
-                        <p className="offer-salary">💰 {offer.salary}€</p>
+                        <p className="offer-location"><MapPin size={14} /> {offer.location}</p>
+                        <p className="offer-salary"><DollarSign size={14} /> {offer.salary}€</p>
                         <p className="offer-description">{offer.description?.substring(0, 100)}...</p>
                         <button className="btn-secondary" onClick={() => navigate(`/offer/${offer.id}`)}>Ver detalles</button>
                       </div>
@@ -531,7 +531,7 @@ function Dashboard() {
                 <h2>Mis solicitudes</h2>
                 {userOffers.length === 0 ? (
                   <div className="empty-state">
-                    <span className="empty-icon">📄</span>
+                    <span className="empty-icon"><FileText size={48} /></span>
                     <p>No has solicitado ninguna oferta</p>
                     <Link to="/offers" className="btn-primary">
                       Ver ofertas disponibles
@@ -572,7 +572,7 @@ function Dashboard() {
                 </div>
                 {notifications.length === 0 ? (
                   <div className="empty-state">
-                    <span className="empty-icon">🔔</span>
+                    <span className="empty-icon"><Bell size={48} /></span>
                     <p>No tienes notificaciones</p>
                   </div>
                 ) : (
@@ -623,7 +623,7 @@ function Dashboard() {
               <div className="section-card">
                 <h2>Mi perfil</h2>
                 <div className="profile-info">
-                  <div className="profile-avatar">👨‍🌾</div>
+                  <div className="profile-avatar"><User size={40} /></div>
                   <div className="profile-details">
                     <div className="profile-field">
                       <span className="field-label">Nombre</span>

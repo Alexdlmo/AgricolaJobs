@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSession, logout, getAllUsers, deleteUser, getAllOffers, deleteOffer, updateOfferStatus, isAdmin, createOffer } from '../utils/authService'
 import { getDashboardStats } from '../utils/apiService'
+import { BarChart3, Users, Briefcase, Tractor, Building2, Settings, CheckCircle, Pause } from 'lucide-react'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
@@ -136,9 +137,9 @@ function AdminDashboard() {
 
   const getRoleLabel = (role) => {
     switch (role) {
-      case 'worker': return '👨‍🌾 Trabajador'
-      case 'company': return '🏢 Empresa'
-      case 'admin': return '⚙️ Admin'
+      case 'worker': return <><Tractor size={16} /> Trabajador</>
+      case 'company': return <><Building2 size={16} /> Empresa</>
+      case 'admin': return <><Settings size={16} /> Admin</>
       default: return role
     }
   }
@@ -165,7 +166,7 @@ function AdminDashboard() {
     <div className="admin-page">
       <div className="admin-header">
         <div className="admin-brand">
-          <span className="brand-icon">⚙️</span>
+          <span className="brand-icon"><Settings size={24} /></span>
           <span className="brand-name">Panel de Administración</span>
         </div>
         <div className="admin-user">
@@ -179,19 +180,19 @@ function AdminDashboard() {
             className={`nav-item ${activeTab === 'stats' ? 'active' : ''}`}
             onClick={() => setActiveTab('stats')}
           >
-            📊 Estadísticas
+            <BarChart3 size={18} /> Estadísticas
           </button>
           <button
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
-            👥 Usuarios ({stats.totalUsers})
+            <Users size={18} /> Usuarios ({stats.totalUsers})
           </button>
           <button
             className={`nav-item ${activeTab === 'offers' ? 'active' : ''}`}
             onClick={() => setActiveTab('offers')}
           >
-            📋 Ofertas ({stats.totalOffers})
+            <Briefcase size={18} /> Ofertas ({stats.totalOffers})
           </button>
         </div>
 
@@ -199,7 +200,7 @@ function AdminDashboard() {
           <div className="stats-grid">
             {pythonStats && (
               <div className="stat-card python-stat clickable" onClick={() => setActiveTab('users')}>
-                <div className="stat-icon">👥</div>
+                <div className="stat-icon"><Users size={24} /></div>
                 <div className="stat-info">
                   <span className="stat-number">{pythonStats.total_users || 0}</span>
                   <span className="stat-label">Usuarios (Python API)</span>
@@ -207,14 +208,14 @@ function AdminDashboard() {
               </div>
             )}
             <div className="stat-card clickable" onClick={() => { setActiveTab('users'); setSearchTerm('worker'); }}>
-              <div className="stat-icon">👨‍🌾</div>
+              <div className="stat-icon"><Tractor size={24} /></div>
               <div className="stat-info">
                 <span className="stat-number">{stats.workers}</span>
                 <span className="stat-label">Trabajadores</span>
               </div>
             </div>
             <div className="stat-card clickable" onClick={() => { setActiveTab('users'); setSearchTerm('company'); }}>
-              <div className="stat-icon">🏢</div>
+              <div className="stat-icon"><Building2 size={24} /></div>
               <div className="stat-info">
                 <span className="stat-number">{stats.companies}</span>
                 <span className="stat-label">Empresas</span>
@@ -230,14 +231,14 @@ function AdminDashboard() {
               </div>
             )}
             <div className="stat-card clickable" onClick={() => { setActiveTab('offers'); setSearchTerm('active'); }}>
-              <div className="stat-icon">✅</div>
+              <div className="stat-icon"><CheckCircle size={24} /></div>
               <div className="stat-info">
                 <span className="stat-number">{stats.activeOffers}</span>
                 <span className="stat-label">Ofertas Activas</span>
               </div>
             </div>
             <div className="stat-card clickable" onClick={() => { setActiveTab('offers'); setSearchTerm('inactive'); }}>
-              <div className="stat-icon">⏸️</div>
+              <div className="stat-icon"><Pause size={24} /></div>
               <div className="stat-info">
                 <span className="stat-number">{stats.inactiveOffers}</span>
                 <span className="stat-label">Ofertas Inactivas</span>

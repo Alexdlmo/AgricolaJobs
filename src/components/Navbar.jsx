@@ -1,37 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { getSession, logout } from '../utils/authService'
+import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { Menu, X, Tractor, Building2, Settings, LogOut } from 'lucide-react'
 import './Navbar.css'
 
 function Navbar() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [user, setUser] = useState(null)
-
-  const checkSession = () => {
-    const session = getSession()
-    setUser(session)
-  }
-
-  useEffect(() => {
-    checkSession()
-    
-    const interval = setInterval(checkSession, 1000)
-    
-    window.addEventListener('storage', checkSession)
-    
-    const handleStorageChange = (e) => {
-      if (e.key === 'agricolaJobsSession') {
-        checkSession()
-      }
-    }
-    window.addEventListener('storage', handleStorageChange)
-    
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener('storage', handleStorageChange)
-    }
-  }, [])
 
   const handleLogout = () => {
     logout()
@@ -41,10 +17,10 @@ function Navbar() {
 
   const getRoleIcon = (role) => {
     switch (role) {
-      case 'worker': return '👨‍🌾'
-      case 'company': return '🏢'
-      case 'admin': return '⚙️'
-      default: return '👤'
+      case 'worker': return <Tractor size={16} />
+      case 'company': return <Building2 size={16} />
+      case 'admin': return <Settings size={16} />
+      default: return null
     }
   }
 
@@ -65,7 +41,7 @@ function Navbar() {
           <span>Agrícola Jobs</span>
         </Link>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menú">
-          <span></span><span></span><span></span>
+          {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
         <div className={`navbar-links ${menuOpen ? 'active' : ''}`}>
           <Link to="/offers" onClick={() => setMenuOpen(false)}>Ofertas</Link>
@@ -79,9 +55,15 @@ function Navbar() {
                 </div>
                 <div className="user-info">
                   <span className="user-name">{user.name}</span>
-                  <span className="user-role">{getRoleIcon(user.role)} {getRoleLabel(user.role)}</span>
+                  <span className="user-role">
+                    {getRoleIcon(user.role)}
+                    {getRoleLabel(user.role)}
+                  </span>
                 </div>
-                <button onClick={handleLogout} className="btn-logout">Cerrar sesión</button>
+                <button onClick={handleLogout} className="btn-logout">
+                  <LogOut size={16} />
+                  Cerrar sesión
+                </button>
               </div>
             ) : (
               <>

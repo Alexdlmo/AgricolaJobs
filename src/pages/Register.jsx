@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { register } from '../utils/authService'
+import { User, Mail, Phone, Building2, FileText, Lock, Eye, EyeOff, Check, X, AlertCircle, Tractor } from 'lucide-react'
 import './Register.css'
 
 function Register() {
@@ -80,7 +81,7 @@ function Register() {
             className={`role-tab ${role === 'worker' ? 'active' : ''}`}
             onClick={() => setRole('worker')}
           >
-            <span className="tab-icon">👨‍🌾</span>
+            <Tractor size={18} />
             Trabajador
           </button>
           <button
@@ -88,14 +89,14 @@ function Register() {
             className={`role-tab ${role === 'company' ? 'active' : ''}`}
             onClick={() => setRole('company')}
           >
-            <span className="tab-icon">🏢</span>
+            <Building2 size={18} />
             Empresa
           </button>
         </div>
 
         {error && (
           <div className="error-message">
-            <span className="error-icon">⚠️</span>
+            <AlertCircle size={18} />
             {error}
           </div>
         )}
@@ -106,7 +107,7 @@ function Register() {
               <div className="form-group">
                 <label>Nombre completo</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">👤</span>
+                  <User size={18} className="input-icon" />
                   <input
                     type="text"
                     value={formData.name}
@@ -120,7 +121,7 @@ function Register() {
               <div className="form-group">
                 <label>Email</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">✉️</span>
+                  <Mail size={18} className="input-icon" />
                   <input
                     type="email"
                     value={formData.email}
@@ -134,7 +135,7 @@ function Register() {
               <div className="form-group">
                 <label>Teléfono</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">📱</span>
+                  <Phone size={18} className="input-icon" />
                   <input
                     type="tel"
                     value={formData.phone}
@@ -150,7 +151,7 @@ function Register() {
               <div className="form-group">
                 <label>Nombre de la empresa</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">🏢</span>
+                  <Building2 size={18} className="input-icon" />
                   <input
                     type="text"
                     value={formData.companyName}
@@ -164,7 +165,7 @@ function Register() {
               <div className="form-group">
                 <label>Email empresarial</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">✉️</span>
+                  <Mail size={18} className="input-icon" />
                   <input
                     type="email"
                     value={formData.email}
@@ -178,7 +179,7 @@ function Register() {
               <div className="form-group">
                 <label>CIF</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">📋</span>
+                  <FileText size={18} className="input-icon" />
                   <input
                     type="text"
                     value={formData.cif}
@@ -193,7 +194,7 @@ function Register() {
               <div className="form-group">
                 <label>Persona de contacto</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">👤</span>
+                  <User size={18} className="input-icon" />
                   <input
                     type="text"
                     value={formData.contactPerson}
@@ -207,7 +208,7 @@ function Register() {
               <div className="form-group">
                 <label>Teléfono de empresa</label>
                 <div className="input-with-icon">
-                  <span className="input-icon">📱</span>
+                  <Phone size={18} className="input-icon" />
                   <input
                     type="tel"
                     value={formData.phone}
@@ -223,7 +224,7 @@ function Register() {
           <div className="form-group">
             <label>Contraseña</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
+              <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
@@ -236,7 +237,7 @@ function Register() {
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
             {formData.password && (
@@ -260,7 +261,7 @@ function Register() {
           <div className="form-group">
             <label>Confirmar contraseña</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
+              <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
@@ -269,10 +270,10 @@ function Register() {
                 disabled={loading}
               />
               {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                <span className="input-validation valid">✓</span>
+                <span className="input-validation valid"><Check size={16} /></span>
               )}
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <span className="input-validation invalid">✗</span>
+                <span className="input-validation invalid"><X size={16} /></span>
               )}
             </div>
           </div>

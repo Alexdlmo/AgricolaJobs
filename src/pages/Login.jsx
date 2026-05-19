@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { login, createAdminIfNotExists } from '../utils/authService'
+import { createAdminIfNotExists } from '../utils/authService'
+import { useAuth } from '../context/AuthContext'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Tractor, Building2 } from 'lucide-react'
 import './Login.css'
 
 function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [role, setRole] = useState('worker')
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -48,7 +51,7 @@ function Login() {
             className={`role-tab ${role === 'worker' ? 'active' : ''}`}
             onClick={() => setRole('worker')}
           >
-            <span className="tab-icon">👨‍🌾</span>
+            <Tractor size={18} />
             Trabajador
           </button>
           <button
@@ -56,14 +59,14 @@ function Login() {
             className={`role-tab ${role === 'company' ? 'active' : ''}`}
             onClick={() => setRole('company')}
           >
-            <span className="tab-icon">🏢</span>
+            <Building2 size={18} />
             Empresa
           </button>
         </div>
 
         {error && (
           <div className="error-message">
-            <span className="error-icon">⚠️</span>
+            <AlertCircle size={18} />
             {error}
           </div>
         )}
@@ -72,7 +75,7 @@ function Login() {
           <div className="form-group">
             <label>Email</label>
             <div className="input-with-icon">
-              <span className="input-icon">✉️</span>
+              <Mail size={18} className="input-icon" />
               <input
                 type="email"
                 value={formData.email}
@@ -86,7 +89,7 @@ function Login() {
           <div className="form-group">
             <label>Contraseña</label>
             <div className="input-with-icon">
-              <span className="input-icon">🔒</span>
+              <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
@@ -99,7 +102,7 @@ function Login() {
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>

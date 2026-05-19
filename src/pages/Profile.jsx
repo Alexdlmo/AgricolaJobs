@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Building2, Wheat } from 'lucide-react'
 import './Profile.css'
 function Profile() {
   const navigate = useNavigate()
@@ -48,7 +49,7 @@ function Profile() {
     <div className="profile-page">
       <div className="profile-container">
         <h1>Mi perfil</h1>
-        <div className="profile-type-badge">{isCompany ? '🏢 Empresa' : '🌾 Trabajador'}</div>
+        <div className="profile-type-badge">{isCompany ? <><Building2 size={16} /> Empresa</> : <><Wheat size={16} /> Trabajador</>}</div>
         {saved && <div className="success-message">✓ Cambios guardados</div>}
         <form onSubmit={handleSubmit} className="profile-form">
           {isCompany ? (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { getSession, getAllOffers, createOffer } from '../utils/authService'
+import { MapPin, DollarSign } from 'lucide-react'
 import './Offers.css'
 
 function Offers() {
@@ -202,8 +203,8 @@ function Offers() {
                 <p className="offer-company">{offer.name || 'Empresa'}</p>
                 <p className="offer-description">{offer.description}</p>
                 <div className="offer-meta">
-                  <span>📍 {offer.location}</span>
-                  <span>💰 {offer.salary}€/día</span>
+                  <span><MapPin size={14} /> {offer.location}</span>
+                  <span><DollarSign size={14} /> {offer.salary}€/día</span>
                 </div>
                 {isWorker && (
                   <button 
