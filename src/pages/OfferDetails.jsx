@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getSession } from '../utils/authService'
+import { MapPin, DollarSign } from 'lucide-react'
 import './Offers.css'
 
 function OfferDetails() {
@@ -158,11 +159,11 @@ function OfferDetails() {
 
           <div className="details-meta">
             <div className="meta-item">
-              <span className="meta-icon">📍</span>
+              <span className="meta-icon"><MapPin size={16} /></span>
               <span>{offer.location}</span>
             </div>
             <div className="meta-item">
-              <span className="meta-icon">💰</span>
+              <span className="meta-icon"><DollarSign size={16} /></span>
               <span>{offer.salary}€/día</span>
             </div>
           </div>

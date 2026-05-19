@@ -191,10 +191,10 @@
 }
 
 .input-icon {
-  font-size: 1.25rem;
   color: #666;
-  min-width: 24px;
-  text-align: center;
+  min-width: 18px;
+  display: flex;
+  align-items: center;
 }
 
 .input-with-icon input {
