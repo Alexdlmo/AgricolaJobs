@@ -1,29 +1,28 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getSession, getAllOffers, createOffer } from '../utils/authService'
+import { getAllOffers, createOffer } from '../utils/authService'
+import { useAuth } from '../context/AuthContext'
 import { MapPin, DollarSign } from 'lucide-react'
 import './Offers.css'
 
 function Offers() {
   const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
   const [searchParams] = useSearchParams()
   const [offers, setOffers] = useState([])
   const [showForm, setShowForm] = useState(searchParams.get('new') === 'true')
   const [formData, setFormData] = useState({ title: '', description: '', location: '', salary: '' })
-  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(null)
   const [appliedOffers, setAppliedOffers] = useState({})
 
   useEffect(() => {
-    const session = getSession()
-    if (!session) {
+    if (!isAuthenticated) {
       navigate('/login')
       return
     }
-    setUser(session)
     loadOffers()
-  }, [navigate])
+  }, [isAuthenticated, navigate])
 
   const loadOffers = async () => {
     setLoading(true)
@@ -31,21 +30,17 @@ function Offers() {
       const allOffers = await getAllOffers()
       setOffers(allOffers.filter(o => o.status === 'active'))
       
-      const session = getSession()
-      if (session && session.role === 'worker') {
+      if (user && user.role === 'worker') {
         const { supabase } = await import('../utils/supabaseClient')
-        const { data: applications, error: appError } = await supabase
+        const { data: applications } = await supabase
           .from('applications')
           .select('offer_id')
-          .eq('worker_id', session.id)
-        
-        console.log('Applications loaded:', applications, 'Error:', appError)
+          .eq('worker_id', user.id)
         
         const appliedMap = {}
         applications?.forEach(app => {
           appliedMap[String(app.offer_id)] = true
         })
-        console.log('Applied map:', appliedMap)
         setAppliedOffers(appliedMap)
       }
     } catch (error) {

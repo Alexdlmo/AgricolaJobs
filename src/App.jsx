@@ -1,9 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import Offers from './pages/Offers'
@@ -11,6 +14,34 @@ import Profile from './pages/Profile'
 import OfferDetails from './pages/OfferDetails'
 import NotFound from './pages/NotFound'
 import './App.css'
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth()
+  
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>Cargando...</div>
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+  
+  return children
+}
+
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth()
+  
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>Cargando...</div>
+  }
+  
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
+  }
+  
+  return children
+}
 
 function App() {
   return (
@@ -22,11 +53,13 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/offers" element={<Offers />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/offers" element={<ProtectedRoute><Offers /></ProtectedRoute>} />
             <Route path="/offer/:id" element={<OfferDetails />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

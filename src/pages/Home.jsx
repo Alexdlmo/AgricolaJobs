@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Tractor, Building2 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import './Home.css'
 
 const images = ['/img/agricola1.jpg', '/img/agricola2.jpg', '/img/agricola3.jpg']
 
 function Home() {
+  const { user } = useAuth()
   const [currentImage, setCurrentImage] = useState(0)
 
   useEffect(() => {
@@ -32,6 +34,12 @@ function Home() {
         <div className="hero-content">
           <h1>Encuentra trabajo en el campo olivarero</h1>
           <p>Conecta con empresas agrícolas que buscan trabajadores. Regístrate gratis y accede a ofertas.</p>
+          {!user && (
+            <div className="hero-buttons">
+              <Link to="/register" className="btn-hero">Crear cuenta</Link>
+              <Link to="/login" className="btn-hero btn-hero-secondary">Iniciar sesión</Link>
+            </div>
+          )}
         </div>
       </section>
       <section className="features">

@@ -1,23 +1,24 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getSession } from '../utils/authService'
-import { MapPin, DollarSign } from 'lucide-react'
+import { getUserAverageRating, getReviewsForUser } from '../utils/authService'
+import { useAuth } from '../context/AuthContext'
+import { MapPin, DollarSign, Star } from 'lucide-react'
 import './Offers.css'
 
 function OfferDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [offer, setOffer] = useState(null)
   const [company, setCompany] = useState(null)
-  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [applying, setApplying] = useState(false)
   const [hasApplied, setHasApplied] = useState(false)
   const [applicationId, setApplicationId] = useState(null)
+  const [companyRating, setCompanyRating] = useState({ average: 0, count: 0 })
+  const [companyReviews, setCompanyReviews] = useState([])
 
   useEffect(() => {
-    const session = getSession()
-    setUser(session)
     loadOffer()
   }, [id])
 
@@ -44,16 +45,25 @@ function OfferDetails() {
 
         if (!companyError) {
           setCompany(companyData)
+          
+          try {
+            const rating = await getUserAverageRating(offerData.company_id)
+            setCompanyRating(rating)
+            
+            const reviews = await getReviewsForUser(offerData.company_id)
+            setCompanyReviews(reviews || [])
+          } catch (error) {
+            console.error('Error loading rating:', error)
+          }
         }
       }
 
-      const session = getSession()
-      if (session && session.role === 'worker') {
+      if (user && user.role === 'worker') {
         const { data: appData, error: appError } = await supabase
           .from('applications')
           .select('id')
           .eq('offer_id', id)
-          .eq('worker_id', session.id)
+          .eq('worker_id', user.id)
           .maybeSingle()
 
         if (!appError && appData) {
@@ -106,6 +116,7 @@ function OfferDetails() {
         if (newApp) {
           setApplicationId(newApp.id)
         }
+        
         setHasApplied(true)
         alert('¡Solicitud enviada correctamente!')
       }
@@ -180,6 +191,16 @@ function OfferDetails() {
                 <span className="info-label">Nombre:</span>
                 <span className="info-value">{company?.name || 'Empresa'}</span>
               </div>
+              {companyRating.count > 0 && (
+                <div className="info-row company-rating">
+                  <span className="info-label">Valoración:</span>
+                  <span className="rating-display">
+                    <Star size={16} fill="#fbbf24" color="#fbbf24" />
+                    <span className="rating-value">{companyRating.average}</span>
+                    <span className="rating-count">({companyRating.count} reseñas)</span>
+                  </span>
+                </div>
+              )}
               {company?.contact_person && (
                 <div className="info-row">
                   <span className="info-label">Persona de contacto:</span>
@@ -196,6 +217,38 @@ function OfferDetails() {
                 <div className="info-row">
                   <span className="info-label">Email:</span>
                   <span className="info-value">{company.email}</span>
+                </div>
+              )}
+              {companyReviews.length > 0 && (
+                <div className="company-reviews-section">
+                  <h3>Últimas reseñas</h3>
+                  <div className="reviews-list">
+                    {companyReviews.slice(0, 5).map(review => (
+                      <div key={review.id} className="review-item">
+                        <div className="review-header">
+                          <div className="review-rating">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <Star 
+                                key={star} 
+                                size={14} 
+                                fill={star <= review.rating ? '#fbbf24' : 'none'} 
+                                color={star <= review.rating ? '#fbbf24' : '#d1d5db'}
+                              />
+                            ))}
+                          </div>
+                          <span className="review-date">
+                            {new Date(review.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                        {review.comment && (
+                          <p className="review-comment">{review.comment}</p>
+                        )}
+                        <span className="reviewer-name">
+                          {review.reviewer?.name || 'Trabajador'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

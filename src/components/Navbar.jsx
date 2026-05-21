@@ -1,18 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { Menu, X, Tractor, Building2, Settings, LogOut } from 'lucide-react'
+import { Tractor, Building2, Settings, LogOut } from 'lucide-react'
 import './Navbar.css'
 
 function Navbar() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [menuOpen, setMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/')
-    setMenuOpen(false)
   }
 
   const getRoleIcon = (role) => {
@@ -40,18 +37,23 @@ function Navbar() {
           <img src="/favicon.png" alt="logo" className="logo-img" />
           <span>Agrícola Jobs</span>
         </Link>
-        <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menú">
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        <div className={`navbar-links ${menuOpen ? 'active' : ''}`}>
-          <Link to="/offers" onClick={() => setMenuOpen(false)}>Ofertas</Link>
-          <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Panel</Link>
-          <Link to="/profile" onClick={() => setMenuOpen(false)}>Perfil</Link>
+        <div className="navbar-links">
+          {user && (
+            <>
+              <Link to="/offers">Ofertas</Link>
+              <Link to="/dashboard">Panel</Link>
+              <Link to="/profile">Perfil</Link>
+            </>
+          )}
           <div className="navbar-auth">
-            {user ? (
+            {user && (
               <div className="user-menu">
                 <div className="user-avatar">
-                  {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt="Avatar" className="user-avatar-img" />
+                  ) : (
+                    user.name ? user.name.charAt(0).toUpperCase() : '?'
+                  )}
                 </div>
                 <div className="user-info">
                   <span className="user-name">{user.name}</span>
@@ -65,11 +67,6 @@ function Navbar() {
                   Cerrar sesión
                 </button>
               </div>
-            ) : (
-              <>
-                <Link to="/login" className="btn-login">Iniciar sesión</Link>
-                <Link to="/register" className="btn-register">Registrarse</Link>
-              </>
             )}
           </div>
         </div>
