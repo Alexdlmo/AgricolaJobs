@@ -300,6 +300,26 @@
     color: #555
 }
 
+.company-rating {
+    align-items: center
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem
+}
+
+.rating-value {
+    font-weight: 700;
+    color: #2d5016
+}
+
+.rating-count {
+    color: #6b7280;
+    font-size: 0.85rem
+}
+
 .details-actions {
     margin-top: 2rem;
     padding-top: 1.5rem;
@@ -339,4 +359,58 @@
 
 .btn-cancel-offer:hover {
     background: #ffebee
+}
+
+.company-reviews-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.company-reviews-section h3 {
+    color: #2d5016;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.review-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.review-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.review-date {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+.review-comment {
+    color: #374151;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.reviewer-name {
+    font-size: 0.85rem;
+    color: #6b7280;
 }

@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createAdminIfNotExists } from '../utils/authService'
 import { useAuth } from '../context/AuthContext'
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Tractor, Building2 } from 'lucide-react'
 import './Login.css'
@@ -13,10 +12,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    createAdminIfNotExists()
-  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -118,6 +113,9 @@ function Login() {
 
         <p className="auth-footer">
           ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+        </p>
+        <p className="auth-footer" style={{ marginTop: '0.5rem' }}>
+          <Link to="/forgot-password">¿Olvidaste tu contraseña?</Link>
         </p>
       </div>
     </div>
