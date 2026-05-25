@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getSession, logout, getAllUsers, deleteUser, getAllOffers, deleteOffer, updateOfferStatus, isAdmin, createOffer } from '../utils/authService'
-import { getDashboardStats } from '../utils/apiService'
-import { BarChart3, Users, Briefcase, Tractor, Building2, Settings, CheckCircle, Pause } from 'lucide-react'
+import { getAllUsers, deleteUser, getAllOffers, deleteOffer, updateOfferStatus, createOffer, getDashboardStats, getMonthlyStats, getTopCompanies, getAllReports, updateReportStatus } from '../utils/authService'
+import { useAuth } from '../context/AuthContext'
+import { BarChart3, Users, Briefcase, Tractor, Building2, Settings, CheckCircle, Pause, Trash2, TrendingUp, Calendar, Download, Flag, Check, X } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
   const navigate = useNavigate()
-  const [user, setUser] = useState(null)
+  const { user, logout } = useAuth()
   const [activeTab, setActiveTab] = useState('stats')
   const [users, setUsers] = useState([])
   const [offers, setOffers] = useState([])
@@ -16,6 +17,12 @@ function AdminDashboard() {
   const [showOfferForm, setShowOfferForm] = useState(false)
   const [offerFormData, setOfferFormData] = useState({ title: '', description: '', location: '', salary: '' })
   const [pythonStats, setPythonStats] = useState(null)
+  const [statsData, setStatsData] = useState(null)
+  const [monthlyData, setMonthlyData] = useState([])
+  const [topCompanies, setTopCompanies] = useState([])
+  const [timeFilter, setTimeFilter] = useState(12)
+  const [reports, setReports] = useState([])
+  const [reportsLoading, setReportsLoading] = useState(false)
 
   const loadData = async () => {
     setLoading(true)
@@ -27,8 +34,17 @@ function AdminDashboard() {
 
       const stats = await getDashboardStats()
       if (stats && !stats.error) {
-        setPythonStats(stats)
+        setStatsData(stats)
       }
+
+      const monthly = await getMonthlyStats(timeFilter)
+      setMonthlyData(monthly || [])
+
+      const top = await getTopCompanies(5)
+      setTopCompanies(top || [])
+
+      const allReports = await getAllReports()
+      setReports(allReports || [])
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -37,17 +53,16 @@ function AdminDashboard() {
   }
 
   useEffect(() => {
-    if (!isAdmin()) {
-      navigate('/login')
+    if (!user) return
+    if (user.role !== 'admin') {
+      navigate('/dashboard')
       return
     }
-    const session = getSession()
-    setUser(session)
     loadData()
-  }, [navigate])
+  }, [user, navigate])
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     navigate('/login')
   }
 
@@ -194,6 +209,12 @@ function AdminDashboard() {
           >
             <Briefcase size={18} /> Ofertas ({stats.totalOffers})
           </button>
+          <button
+            className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reports')}
+          >
+            <Flag size={18} /> Reportes ({reports.filter(r => r.status === 'pending').length})
+          </button>
         </div>
 
         {activeTab === 'stats' && (
@@ -244,8 +265,126 @@ function AdminDashboard() {
                 <span className="stat-label">Ofertas Inactivas</span>
               </div>
             </div>
-          </div>
-        )}
+          </div>)}
+
+          {statsData && (
+            <div className="charts-section">
+              <div className="charts-header">
+                <h3><TrendingUp size={20} /> Estadísticas detalladas</h3>
+                <div className="chart-filters">
+                  <select value={timeFilter} onChange={(e) => setTimeFilter(Number(e.target.value))}>
+                    <option value={3}>Últimos 3 meses</option>
+                    <option value={6}>Últimos 6 meses</option>
+                    <option value={12}>Últimos 12 meses</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="charts-grid">
+                <div className="chart-card">
+                  <h4>Usuarios nuevos por mes</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="users" fill="#2d5016" name="Usuarios" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="chart-card">
+                  <h4>Ofertas publicadas por mes</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis />
+                      <Tooltip />
+                      <Line type="monotone" dataKey="offers" stroke="#2d5016" strokeWidth={2} name="Ofertas" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="chart-card">
+                  <h4>Solicitudes por estado</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Pendientes', value: statsData.pendingApps || 0, color: '#f59e0b' },
+                          { name: 'Aceptadas', value: statsData.acceptedApps || 0, color: '#10b981' },
+                          { name: 'Rechazadas', value: statsData.rejectedApps || 0, color: '#ef4444' }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {[0, 1, 2].map((index, category) => (
+                          <Cell key={`cell-${index}`} fill={[
+                            { name: 'Pendientes', value: statsData.pendingApps || 0, color: '#f59e0b' },
+                            { name: 'Aceptadas', value: statsData.acceptedApps || 0, color: '#10b981' },
+                            { name: 'Rechazadas', value: statsData.rejectedApps || 0, color: '#ef4444' }
+                          ][index].color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="chart-legend">
+                    <span><span className="dot" style={{ background: '#f59e0b' }}></span> Pendientes ({statsData.pendingApps || 0})</span>
+                    <span><span className="dot" style={{ background: '#10b981' }}></span> Aceptadas ({statsData.acceptedApps || 0})</span>
+                    <span><span className="dot" style={{ background: '#ef4444' }}></span> Rechazadas ({statsData.rejectedApps || 0})</span>
+                  </div>
+                </div>
+
+                <div className="chart-card">
+                  <h4>Top 5 Empresas con más ofertas</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={topCompanies} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#2d5016" name="Ofertas" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="chart-card">
+                  <h4>Distribución de usuarios</h4>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Trabajadores', value: statsData.workers || 0, color: '#2d5016' },
+                          { name: 'Empresas', value: statsData.companies || 0, color: '#4a7c22' }
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        <Cell fill="#2d5016" />
+                        <Cell fill="#4a7c22" />
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="chart-legend">
+                    <span><span className="dot" style={{ background: '#2d5016' }}></span> Trabajadores ({statsData.workers || 0})</span>
+                    <span><span className="dot" style={{ background: '#4a7c22' }}></span> Empresas ({statsData.companies || 0})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
         {activeTab === 'users' && (
           <div className="section-card">
@@ -291,7 +430,7 @@ function AdminDashboard() {
                           onClick={() => handleDeleteUser(u.id)}
                           disabled={u.role === 'admin'}
                         >
-                          🗑️
+                          <Trash2 size={16} />
                         </button>
                       </td>
                     </tr>
@@ -402,7 +541,7 @@ function AdminDashboard() {
                           className="btn-delete"
                           onClick={() => handleDeleteOffer(o.id)}
                         >
-                          🗑️
+                          <Trash2 size={16} />
                         </button>
                       </td>
                     </tr>
@@ -415,6 +554,99 @@ function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="section-card">
+            <div className="section-header">
+              <h2>Gestión de Reportes</h2>
+              <span className="reports-count">{reports.filter(r => r.status === 'pending').length} pendientes</span>
+            </div>
+            {reports.length === 0 ? (
+              <div className="empty-state">
+                <Flag size={48} />
+                <p>No hay reportes</p>
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Reportador</th>
+                      <th>Reportado</th>
+                      <th>Motivo</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reports.map(report => (
+                      <tr key={report.id}>
+                        <td>{formatDate(report.created_at)}</td>
+                        <td>{report.reporter?.name || 'Usuario'}</td>
+                        <td>{report.reported?.name || 'Usuario'}</td>
+                        <td>{report.reason}</td>
+                        <td>{report.description || '-'}</td>
+                        <td>
+                          <span className={`status-badge-report ${report.status}`}>
+                            {report.status === 'pending' ? 'Pendiente' :
+                             report.status === 'reviewed' ? 'Revisado' :
+                             report.status === 'dismissed' ? 'Desestimado' : 'Resuelto'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="report-actions">
+                            {report.status === 'pending' && (
+                              <>
+                                <button
+                                  className="btn-report-action dismiss"
+                                  onClick={async () => {
+                                    if (confirm('¿Desestimar este reporte?')) {
+                                      await updateReportStatus(report.id, 'dismissed')
+                                      setReports(await getAllReports())
+                                    }
+                                  }}
+                                  title="Desestimar"
+                                >
+                                  <X size={16} />
+                                </button>
+                                <button
+                                  className="btn-report-action resolve"
+                                  onClick={async () => {
+                                    if (confirm('¿Resolver este reporte?')) {
+                                      await updateReportStatus(report.id, 'resolved')
+                                      setReports(await getAllReports())
+                                    }
+                                  }}
+                                  title="Resolver"
+                                >
+                                  <Check size={16} />
+                                </button>
+                              </>
+                            )}
+                            {(report.status === 'reviewed' || report.status === 'dismissed') && (
+                              <button
+                                className="btn-report-action resolve"
+                                onClick={async () => {
+                                  await updateReportStatus(report.id, 'resolved')
+                                  setReports(await getAllReports())
+                                }}
+                                title="Resolver"
+                              >
+                                <Check size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

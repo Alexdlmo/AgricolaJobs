@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { register } from '../utils/authService'
+import { useAuth } from '../context/AuthContext'
 import { User, Mail, Phone, Building2, FileText, Lock, Eye, EyeOff, Check, X, AlertCircle, Tractor } from 'lucide-react'
 import './Register.css'
 
 function Register() {
   const navigate = useNavigate()
+  const { register } = useAuth()
   const [searchParams] = useSearchParams()
   const [role, setRole] = useState(() => searchParams.get('role') || 'worker')
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ function Register() {
     cif: '',
     contactPerson: ''
   })
+  const [errors, setErrors] = useState({})
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,12 +35,89 @@ function Register() {
 
   const passwordStrength = getPasswordStrength(formData.password)
 
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'name':
+        if (!value || value.trim().length < 2) return 'El nombre debe tener al menos 2 caracteres'
+        if (!/^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ]+$/.test(value)) return 'El nombre solo puede contener letras'
+        return ''
+      case 'email':
+        if (!value) return 'El email es obligatorio'
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Formato de email inválido'
+        return ''
+      case 'phone':
+        if (!value) return 'El teléfono es obligatorio'
+        if (!/^\d{9}$/.test(value)) return 'El teléfono debe tener exactamente 9 dígitos'
+        return ''
+      case 'password':
+        if (!value) return 'La contraseña es obligatoria'
+        if (value.length < 6) return 'La contraseña debe tener al menos 6 caracteres'
+        return ''
+      case 'confirmPassword':
+        if (!value) return 'Debes confirmar la contraseña'
+        if (value !== formData.password) return 'Las contraseñas no coinciden'
+        return ''
+      case 'companyName':
+        if (!value || value.trim().length < 2) return 'El nombre de la empresa es obligatorio'
+        return ''
+      case 'cif':
+        if (!value) return 'El CIF es obligatorio'
+        if (!/^[A-Z0-9]{9}$/.test(value)) return 'El CIF debe tener 9 caracteres (letras y números)'
+        return ''
+      case 'contactPerson':
+        if (!value || value.trim().length < 2) return 'La persona de contacto es obligatoria'
+        return ''
+      default:
+        return ''
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    let processedValue = value
+
+    if (name === 'phone') {
+      processedValue = value.replace(/\D/g, '').slice(0, 9)
+    } else if (name === 'cif') {
+      processedValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9)
+    } else if (name === 'name' || name === 'contactPerson') {
+      processedValue = value.replace(/[^a-zA-Z\sáéíóúÁÉÍÓÚñÑ]/g, '')
+    } else {
+      processedValue = value
+    }
+
+    setFormData({ ...formData, [name]: processedValue })
+
+    const error = validateField(name, processedValue)
+    setErrors({ ...errors, [name]: error })
+  }
+
+  const validateForm = () => {
+    const newErrors = {}
+    const workerFields = ['name', 'email', 'phone', 'password', 'confirmPassword']
+    const companyFields = ['companyName', 'email', 'cif', 'contactPerson', 'phone', 'password', 'confirmPassword']
+    const fieldsToValidate = role === 'worker' ? workerFields : companyFields
+
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, formData[field])
+      if (error) newErrors[field] = error
+    })
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
     if (!acceptedTerms) {
       setError('Debes aceptar los términos y condiciones')
+      return
+    }
+
+    if (!validateForm()) {
+      setError('Por favor, corrige los errores antes de continuar')
       return
     }
 
@@ -57,10 +136,6 @@ function Register() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const updateField = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   return (
@@ -110,12 +185,15 @@ function Register() {
                   <User size={18} className="input-icon" />
                   <input
                     type="text"
+                    name="name"
                     value={formData.name}
-                    onChange={e => updateField('name', e.target.value)}
+                    onChange={handleChange}
                     placeholder="Nombre Apellido"
                     disabled={loading}
+                    className={errors.name ? 'input-error' : ''}
                   />
                 </div>
+                {errors.name && <span className="field-error">{errors.name}</span>}
               </div>
 
               <div className="form-group">
@@ -124,12 +202,15 @@ function Register() {
                   <Mail size={18} className="input-icon" />
                   <input
                     type="email"
+                    name="email"
                     value={formData.email}
-                    onChange={e => updateField('email', e.target.value)}
+                    onChange={handleChange}
                     placeholder="tu@email.com"
                     disabled={loading}
+                    className={errors.email ? 'input-error' : ''}
                   />
                 </div>
+                {errors.email && <span className="field-error">{errors.email}</span>}
               </div>
 
               <div className="form-group">
@@ -138,12 +219,15 @@ function Register() {
                   <Phone size={18} className="input-icon" />
                   <input
                     type="tel"
+                    name="phone"
                     value={formData.phone}
-                    onChange={e => updateField('phone', e.target.value)}
-                    placeholder="600 000 000"
+                    onChange={handleChange}
+                    placeholder="9 dígitos (ej: 600123456)"
                     disabled={loading}
+                    className={errors.phone ? 'input-error' : ''}
                   />
                 </div>
+                {errors.phone && <span className="field-error">{errors.phone}</span>}
               </div>
             </>
           ) : (
@@ -154,12 +238,15 @@ function Register() {
                   <Building2 size={18} className="input-icon" />
                   <input
                     type="text"
+                    name="companyName"
                     value={formData.companyName}
-                    onChange={e => updateField('companyName', e.target.value)}
+                    onChange={handleChange}
                     placeholder="Nombre de tu empresa"
                     disabled={loading}
+                    className={errors.companyName ? 'input-error' : ''}
                   />
                 </div>
+                {errors.companyName && <span className="field-error">{errors.companyName}</span>}
               </div>
 
               <div className="form-group">
@@ -168,12 +255,15 @@ function Register() {
                   <Mail size={18} className="input-icon" />
                   <input
                     type="email"
+                    name="email"
                     value={formData.email}
-                    onChange={e => updateField('email', e.target.value)}
+                    onChange={handleChange}
                     placeholder="empresa@email.com"
                     disabled={loading}
+                    className={errors.email ? 'input-error' : ''}
                   />
                 </div>
+                {errors.email && <span className="field-error">{errors.email}</span>}
               </div>
 
               <div className="form-group">
@@ -182,13 +272,16 @@ function Register() {
                   <FileText size={18} className="input-icon" />
                   <input
                     type="text"
+                    name="cif"
                     value={formData.cif}
-                    onChange={e => updateField('cif', e.target.value.toUpperCase())}
+                    onChange={handleChange}
                     placeholder="A12345678"
                     maxLength={9}
                     disabled={loading}
+                    className={errors.cif ? 'input-error' : ''}
                   />
                 </div>
+                {errors.cif && <span className="field-error">{errors.cif}</span>}
               </div>
 
               <div className="form-group">
@@ -197,12 +290,15 @@ function Register() {
                   <User size={18} className="input-icon" />
                   <input
                     type="text"
+                    name="contactPerson"
                     value={formData.contactPerson}
-                    onChange={e => updateField('contactPerson', e.target.value)}
+                    onChange={handleChange}
                     placeholder="Nombre completo"
                     disabled={loading}
+                    className={errors.contactPerson ? 'input-error' : ''}
                   />
                 </div>
+                {errors.contactPerson && <span className="field-error">{errors.contactPerson}</span>}
               </div>
 
               <div className="form-group">
@@ -211,12 +307,15 @@ function Register() {
                   <Phone size={18} className="input-icon" />
                   <input
                     type="tel"
+                    name="phone"
                     value={formData.phone}
-                    onChange={e => updateField('phone', e.target.value)}
-                    placeholder="900 000 000"
+                    onChange={handleChange}
+                    placeholder="9 dígitos (ej: 900123456)"
                     disabled={loading}
+                    className={errors.phone ? 'input-error' : ''}
                   />
                 </div>
+                {errors.phone && <span className="field-error">{errors.phone}</span>}
               </div>
             </>
           )}
@@ -227,10 +326,12 @@ function Register() {
               <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="password"
                 value={formData.password}
-                onChange={e => updateField('password', e.target.value)}
+                onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
+                className={errors.password ? 'input-error' : ''}
               />
               <button
                 type="button"
@@ -256,6 +357,7 @@ function Register() {
                 </span>
               </div>
             )}
+            {errors.password && <span className="field-error">{errors.password}</span>}
           </div>
 
           <div className="form-group">
@@ -264,10 +366,12 @@ function Register() {
               <Lock size={18} className="input-icon" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="confirmPassword"
                 value={formData.confirmPassword}
-                onChange={e => updateField('confirmPassword', e.target.value)}
+                onChange={handleChange}
                 placeholder="••••••••"
                 disabled={loading}
+                className={errors.confirmPassword ? 'input-error' : ''}
               />
               {formData.confirmPassword && formData.password === formData.confirmPassword && (
                 <span className="input-validation valid"><Check size={16} /></span>
@@ -276,6 +380,7 @@ function Register() {
                 <span className="input-validation invalid"><X size={16} /></span>
               )}
             </div>
+            {errors.confirmPassword && <span className="field-error">{errors.confirmPassword}</span>}
           </div>
 
           <div className="form-group terms-group">
