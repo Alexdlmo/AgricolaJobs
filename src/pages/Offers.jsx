@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getAllOffers, createOffer } from '../utils/authService'
+import { getAllOffers, createOffer, createNotification } from '../utils/authService'
 import { useAuth } from '../context/AuthContext'
 import { MapPin, DollarSign } from 'lucide-react'
 import './Offers.css'
@@ -22,7 +22,7 @@ function Offers() {
       return
     }
     loadOffers()
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, navigate, user])
 
   const loadOffers = async () => {
     setLoading(true)
@@ -109,6 +109,22 @@ function Offers() {
         })
       
       if (error) throw error
+      
+      const { data: offerData } = await supabase
+        .from('offers')
+        .select('company_id, title')
+        .eq('id', offerId)
+        .single()
+      
+      if (offerData) {
+        await createNotification(
+          offerData.company_id,
+          'Nuevo interesado',
+          `Un trabajador está interesado en tu oferta: ${offerData.title}`,
+          'new_application'
+        )
+      }
+      
       setAppliedOffers(prev => ({ ...prev, [offerId]: true }))
       alert('¡Solicitud enviada!')
     } catch (error) {

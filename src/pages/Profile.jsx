@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Wheat, Loader, Camera, Star } from 'lucide-react'
+import { Building2, Wheat, Loader, Camera, Star, FileText, Trash2, Upload } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../utils/supabaseClient'
-import { uploadAvatar, updateAvatarInUser, getReviewsForUser, getUserAverageRating } from '../utils/authService'
+import { uploadAvatar, updateAvatarInUser, getReviewsForUser, getUserAverageRating, uploadCV, deleteCV } from '../utils/authService'
 import './Profile.css'
 
 function Profile() {
@@ -26,6 +26,9 @@ function Profile() {
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [reviews, setReviews] = useState([])
   const [ratingData, setRatingData] = useState({ average: 0, count: 0 })
+  const [cvFile, setCvFile] = useState(null)
+  const [cvUploading, setCvUploading] = useState(false)
+  const [deletingCv, setDeletingCv] = useState(false)
 
   useEffect(() => {
     if (!authUser) { navigate('/login'); return }
@@ -35,7 +38,7 @@ function Profile() {
       email: authUser.email || '', 
       phone: authUser.phone || '',
       location: authUser.location || '',
-      companyName: authUser.companyName || '',
+      companyName: authUser.company_name || '',
       cif: authUser.cif || '',
       contactPerson: authUser.contact_person || ''
     })
@@ -164,7 +167,7 @@ function Profile() {
         avatar_url: avatarUrl
       }
       if (user.role === 'company') {
-        updateData.companyName = formData.companyName
+        updateData.company_name = formData.companyName
         updateData.cif = formData.cif
         updateData.contact_person = formData.contactPerson
       }
@@ -331,6 +334,113 @@ function Profile() {
             {loading ? <><Loader className="spin" size={20} /> Guardando...</> : 'Guardar cambios'}
           </button>
         </form>
+
+        {!isCompany && (
+          <div className="form-section">
+            <h3>Currículum (CV)</h3>
+            {user.cv_url ? (
+              <div className="cv-info">
+                <div className="cv-file-info">
+                  <FileText size={24} className="cv-icon" />
+                  <div className="cv-details">
+                    <span className="cv-label">CV actual:</span>
+                    <a href={user.cv_url} target="_blank" rel="noopener noreferrer" className="cv-link">
+                      Ver currículum
+                    </a>
+                  </div>
+                </div>
+                <div className="cv-actions">
+                  <label className="btn-cv-upload">
+                    <Upload size={16} /> Cambiar
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files[0]
+                        if (!file) return
+                        if (file.type !== 'application/pdf') {
+                          alert('Solo se permiten archivos PDF')
+                          return
+                        }
+                        if (file.size > 5 * 1024 * 1024) {
+                          alert('El archivo debe ser menor de 5MB')
+                          return
+                        }
+                        setCvUploading(true)
+                        try {
+                          const result = await uploadCV(user.id, file)
+                          await supabase.from('users').update({ cv_url: result.url }).eq('id', user.id)
+                          setUser({ ...user, cv_url: result.url })
+                          alert('CV actualizado correctamente')
+                        } catch (err) {
+                          alert(err.message)
+                        } finally {
+                          setCvUploading(false)
+                        }
+                      }}
+                      disabled={cvUploading}
+                    />
+                  </label>
+                  <button
+                    className="btn-cv-delete"
+                    onClick={async () => {
+                      if (!confirm('¿Eliminar tu CV?')) return
+                      setDeletingCv(true)
+                      try {
+                        await deleteCV(user.id)
+                        setUser({ ...user, cv_url: null })
+                        alert('CV eliminado')
+                      } catch (err) {
+                        alert(err.message)
+                      } finally {
+                        setDeletingCv(false)
+                      }
+                    }}
+                    disabled={deletingCv}
+                  >
+                    <Trash2 size={16} /> {deletingCv ? 'Eliminando...' : 'Eliminar'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="cv-upload-area">
+                <label className="btn-cv-upload-main">
+                  <Upload size={20} />
+                  <span>{cvUploading ? 'Subiendo...' : 'Subir CV (PDF)'}</span>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={async (e) => {
+                      const file = e.target.files[0]
+                      if (!file) return
+                      if (file.type !== 'application/pdf') {
+                        alert('Solo se permiten archivos PDF')
+                        return
+                      }
+                      if (file.size > 5 * 1024 * 1024) {
+                        alert('El archivo debe ser menor de 5MB')
+                        return
+                      }
+                      setCvUploading(true)
+                      try {
+                        const result = await uploadCV(user.id, file)
+                        await supabase.from('users').update({ cv_url: result.url }).eq('id', user.id)
+                        setUser({ ...user, cv_url: result.url })
+                        alert('CV subido correctamente')
+                      } catch (err) {
+                        alert(err.message)
+                      } finally {
+                        setCvUploading(false)
+                      }
+                    }}
+                    disabled={cvUploading}
+                  />
+                </label>
+                <p className="cv-hint">Formato PDF, máximo 5MB</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {ratingData.count > 0 && (
           <div className="profile-reviews-section">

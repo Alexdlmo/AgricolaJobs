@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { getUserAverageRating, getReviewsForUser } from '../utils/authService'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { getUserAverageRating, getReviewsForUser, createNotification } from '../utils/authService'
 import { useAuth } from '../context/AuthContext'
-import { MapPin, DollarSign, Star } from 'lucide-react'
+import { MapPin, DollarSign, Star, Flag } from 'lucide-react'
+import ReportModal from '../components/ReportModal'
 import './Offers.css'
 
 function OfferDetails() {
@@ -17,6 +18,7 @@ function OfferDetails() {
   const [applicationId, setApplicationId] = useState(null)
   const [companyRating, setCompanyRating] = useState({ average: 0, count: 0 })
   const [companyReviews, setCompanyReviews] = useState([])
+  const [showReportModal, setShowReportModal] = useState(false)
 
   useEffect(() => {
     loadOffer()
@@ -39,7 +41,7 @@ function OfferDetails() {
       if (offerData?.company_id) {
         const { data: companyData, error: companyError } = await supabase
           .from('users')
-          .select('name, phone, contact_person, email')
+          .select('id, name, phone, contact_person, email')
           .eq('id', offerData.company_id)
           .maybeSingle()
 
@@ -112,6 +114,21 @@ function OfferDetails() {
           .single()
         
         if (error) throw error
+        
+        const { data: offerData } = await supabase
+          .from('offers')
+          .select('company_id, title')
+          .eq('id', id)
+          .single()
+        
+        if (offerData) {
+          await createNotification(
+            offerData.company_id,
+            'Nuevo interesado',
+            `Un trabajador está interesado en tu oferta: ${offerData.title}`,
+            'new_application'
+          )
+        }
         
         if (newApp) {
           setApplicationId(newApp.id)
@@ -189,7 +206,9 @@ function OfferDetails() {
             <div className="company-info">
               <div className="info-row">
                 <span className="info-label">Nombre:</span>
-                <span className="info-value">{company?.name || 'Empresa'}</span>
+                <Link to={`/company/${offer.company_id}`} className="info-value company-link">
+                  {company?.name || 'Empresa'}
+                </Link>
               </div>
               {companyRating.count > 0 && (
                 <div className="info-row company-rating">
@@ -265,8 +284,29 @@ function OfferDetails() {
               </button>
             </div>
           )}
+          {user && user.role !== 'company' && (
+            <div className="details-actions" style={{ marginTop: '0.5rem' }}>
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="btn-report-offer"
+              >
+                <Flag size={16} /> Reportar oferta
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {showReportModal && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          reportedId={offer.company_id}
+          offerId={offer.id}
+          reporterId={user?.id}
+          type="offer"
+        />
+      )}
     </div>
   )
 }

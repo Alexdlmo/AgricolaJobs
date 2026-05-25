@@ -185,11 +185,26 @@ export const login = async (email, password) => {
   return profile
 }
 
+function clearSupabaseKeys() {
+  const patterns = [
+    key => key.startsWith('supabase.auth.'),
+    key => key.startsWith('sb-') && key.endsWith('-auth-token'),
+    key => key.startsWith('sb-') && key.endsWith('-auth-token-code-verifier'),
+  ]
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i)
+    if (key && patterns.some(match => match(key))) {
+      localStorage.removeItem(key)
+    }
+  }
+}
+
 export const logout = async () => {
   const { error } = await supabase.auth.signOut()
   if (error) {
     console.error('Error al cerrar sesión:', error)
   }
+  clearSupabaseKeys()
 }
 
 export const getSession = async () => {
@@ -262,14 +277,8 @@ export const getAllOffers = async () => {
 }
 
 export const deleteOffer = async (offerId) => {
-  const { error } = await supabase
-    .from('offers')
-    .delete()
-    .eq('id', offerId)
-
-  if (error) {
-    throw new Error('Error al eliminar oferta')
-  }
+  const { error } = await supabase.rpc('delete_offer_with_deps', { p_offer_id: offerId })
+  if (error) throw new Error('Error al eliminar oferta: ' + error.message)
   return true
 }
 
@@ -315,7 +324,7 @@ export const getOffersByCompany = async (companyId) => {
 export const createNotification = async (userId, title, message, type) => {
   console.log('Creating notification:', { userId, title, message, type })
   
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('notifications')
     .insert({
       user_id: userId,
@@ -323,16 +332,14 @@ export const createNotification = async (userId, title, message, type) => {
       message,
       type
     })
-    .select()
-    .single()
 
   if (error) {
     console.error('Error creating notification:', error)
     alert('Error al crear notificación: ' + error.message)
     return null
   }
-  console.log('Notification created successfully:', data)
-  return data
+  console.log('Notification created successfully')
+  return true
 }
 
 export const getNotifications = async (userId) => {
@@ -431,6 +438,100 @@ export const updateAvatarInUser = async (userId, avatarUrl) => {
 
   if (error) {
     throw new Error('Error al actualizar el avatar: ' + error.message)
+  }
+  return true
+}
+
+export const uploadCV = async (userId, file) => {
+  const fileExt = file.name.split('.').pop()
+  const fileName = `cv-${userId}-${Date.now()}.${fileExt}`
+
+  const { data, error } = await supabase.storage
+    .from('cvs')
+    .upload(fileName, file, {
+      upsert: true,
+      contentType: file.type
+    })
+
+  if (error) {
+    throw new Error('Error al subir el CV: ' + error.message)
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('cvs')
+    .getPublicUrl(fileName)
+
+  return { url: publicUrl, fileName: file.name }
+}
+
+export const deleteCV = async (userId) => {
+  const { data: user } = await supabase
+    .from('users')
+    .select('cv_url')
+    .eq('id', userId)
+    .single()
+
+  if (user?.cv_url) {
+    const oldFileName = user.cv_url.split('/').pop()
+    await supabase.storage
+      .from('cvs')
+      .remove([oldFileName])
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ cv_url: null })
+    .eq('id', userId)
+
+  if (error) {
+    throw new Error('Error al eliminar el CV: ' + error.message)
+  }
+  return true
+}
+
+export const createReport = async ({ reporter_id, reported_id, offer_id, reason, description }) => {
+  const { data, error } = await supabase
+    .from('reports')
+    .insert({
+      reporter_id,
+      reported_id,
+      offer_id: offer_id || null,
+      reason,
+      description: description || ''
+    })
+    .select()
+    .single()
+
+  if (error) {
+    throw new Error('Error al enviar el reporte: ' + error.message)
+  }
+  return data
+}
+
+export const getAllReports = async () => {
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*, reporter:users!reports_reporter_id_fkey(name, email), reported:users!reports_reported_id_fkey(name, email)')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching reports:', error)
+    return []
+  }
+  return data || []
+}
+
+export const updateReportStatus = async (reportId, status) => {
+  const { error } = await supabase
+    .from('reports')
+    .update({
+      status,
+      reviewed_at: new Date().toISOString()
+    })
+    .eq('id', reportId)
+
+  if (error) {
+    throw new Error('Error al actualizar el reporte: ' + error.message)
   }
   return true
 }

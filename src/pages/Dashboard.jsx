@@ -47,25 +47,37 @@ function Dashboard() {
         
         const offerIds = companyOffers.map(o => o.id)
         if (offerIds.length > 0) {
-          const { supabase } = await import('../utils/supabaseClient')
           const { data: applications, error: appError } = await supabase
             .from('applications')
-            .select('*, worker:users(id, name, phone, email)')
+            .select('*')
             .in('offer_id', offerIds)
             .order('applied_at', { ascending: false })
           
           if (!appError && applications) {
             const applicantsByOffer = {}
+            const workerIds = [...new Set(applications.map(a => a.worker_id).filter(Boolean))]
+            
+            const workerMap = {}
+            if (workerIds.length > 0) {
+              const { data: workers } = await supabase
+                .from('users')
+                .select('id, name, phone, email')
+                .in('id', workerIds)
+              workers?.forEach(w => { workerMap[w.id] = w })
+            }
+            
             applications.forEach(app => {
               if (!applicantsByOffer[app.offer_id]) {
                 applicantsByOffer[app.offer_id] = []
               }
+              const worker = workerMap[app.worker_id] || {}
               applicantsByOffer[app.offer_id].push({
                 id: app.id,
-                workerId: app.worker.id,
-                workerName: app.worker.name,
-                workerPhone: app.worker.phone,
-                workerEmail: app.worker.email,
+                workerId: app.worker_id,
+                workerName: worker.name || 'Trabajador',
+                workerPhone: worker.phone || '',
+                workerEmail: worker.email || '',
+                workerCv: worker.cv_url || null,
                 status: app.status,
                 appliedAt: app.applied_at
               })
@@ -479,6 +491,12 @@ function Dashboard() {
                 <Plus size={18} /> Publicar
               </button>
               <button 
+                className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
+                onClick={() => setActiveTab('notifications')}
+              >
+                <Bell size={18} /> Notificaciones {notifications.filter(n => !n.read).length > 0 && `(${notifications.filter(n => !n.read).length})`}
+              </button>
+              <button 
                 className={`nav-item ${activeTab === 'messages' ? 'active' : ''}`}
                 onClick={() => setActiveTab('messages')}
               >
@@ -566,6 +584,11 @@ function Dashboard() {
                                         <h4>{app.workerName}</h4>
                                         <p><Phone size={16} /> {app.workerPhone}</p>
                                         <p><Mail size={16} /> {app.workerEmail}</p>
+                                        {app.workerCv && (
+                                          <p className="cv-link-applicant">
+                                            <a href={app.workerCv} target="_blank" rel="noopener noreferrer">Ver CV</a>
+                                          </p>
+                                        )}
                                         <p className="applied-date">
                                           {new Date(app.appliedAt).toLocaleDateString('es-ES')}
                                         </p>
@@ -766,6 +789,65 @@ function Dashboard() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="section-card">
+                <div className="notifications-header">
+                  <h2>Mis notificaciones</h2>
+                  {notifications.length > 0 && (
+                    <button className="btn-delete-all" onClick={handleDeleteAllNotifications}>
+                      Vaciar todas
+                    </button>
+                  )}
+                </div>
+                {notifications.length === 0 ? (
+                  <div className="empty-state">
+                    <span className="empty-icon"><Bell size={48} /></span>
+                    <p>No tienes notificaciones</p>
+                  </div>
+                ) : (
+                  <div className="notifications-list">
+                    {notifications.map(notif => (
+                      <div 
+                        key={notif.id} 
+                        className={`notification-item ${!notif.read ? 'unread' : ''}`}
+                        onClick={async () => {
+                          if (!notif.read) {
+                            await markNotificationAsRead(notif.id)
+                            setNotifications(prev => prev.map(n => 
+                              n.id === notif.id ? { ...n, read: true } : n
+                            ))
+                          }
+                        }}
+                      >
+                        <div className="notification-content">
+                          <h4>{notif.title}</h4>
+                          <p>{notif.message}</p>
+                          <span className="notification-date">
+                            {new Date(notif.created_at + 'Z').toLocaleString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        <div className="notification-actions">
+                          {!notif.read && <span className="notification-dot"></span>}
+                          <button 
+                            className="btn-delete-notif"
+                            onClick={(e) => handleDeleteNotification(notif.id, e)}
+                            title="Eliminar"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

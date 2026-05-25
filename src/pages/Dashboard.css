@@ -565,6 +565,17 @@
   font-size: 0.8rem;
 }
 
+.cv-link-applicant {
+  margin: 0.25rem 0;
+}
+
+.cv-link-applicant a {
+  color: #2d5016;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
 .applicant-actions {
   display: flex;
   gap: 0.5rem;

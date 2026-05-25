@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAllUsers, deleteUser, getAllOffers, deleteOffer, updateOfferStatus, createOffer, getDashboardStats, getMonthlyStats, getTopCompanies } from '../utils/authService'
+import { getAllUsers, deleteUser, getAllOffers, deleteOffer, updateOfferStatus, createOffer, getDashboardStats, getMonthlyStats, getTopCompanies, getAllReports, updateReportStatus } from '../utils/authService'
 import { useAuth } from '../context/AuthContext'
-import { BarChart3, Users, Briefcase, Tractor, Building2, Settings, CheckCircle, Pause, Trash2, TrendingUp, Calendar, Download } from 'lucide-react'
+import { BarChart3, Users, Briefcase, Tractor, Building2, Settings, CheckCircle, Pause, Trash2, TrendingUp, Calendar, Download, Flag, Check, X } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 import './AdminDashboard.css'
 
@@ -21,6 +21,8 @@ function AdminDashboard() {
   const [monthlyData, setMonthlyData] = useState([])
   const [topCompanies, setTopCompanies] = useState([])
   const [timeFilter, setTimeFilter] = useState(12)
+  const [reports, setReports] = useState([])
+  const [reportsLoading, setReportsLoading] = useState(false)
 
   const loadData = async () => {
     setLoading(true)
@@ -40,6 +42,9 @@ function AdminDashboard() {
 
       const top = await getTopCompanies(5)
       setTopCompanies(top || [])
+
+      const allReports = await getAllReports()
+      setReports(allReports || [])
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -203,6 +208,12 @@ function AdminDashboard() {
             onClick={() => setActiveTab('offers')}
           >
             <Briefcase size={18} /> Ofertas ({stats.totalOffers})
+          </button>
+          <button
+            className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reports')}
+          >
+            <Flag size={18} /> Reportes ({reports.filter(r => r.status === 'pending').length})
           </button>
         </div>
 
@@ -543,6 +554,99 @@ function AdminDashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="section-card">
+            <div className="section-header">
+              <h2>Gestión de Reportes</h2>
+              <span className="reports-count">{reports.filter(r => r.status === 'pending').length} pendientes</span>
+            </div>
+            {reports.length === 0 ? (
+              <div className="empty-state">
+                <Flag size={48} />
+                <p>No hay reportes</p>
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Reportador</th>
+                      <th>Reportado</th>
+                      <th>Motivo</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reports.map(report => (
+                      <tr key={report.id}>
+                        <td>{formatDate(report.created_at)}</td>
+                        <td>{report.reporter?.name || 'Usuario'}</td>
+                        <td>{report.reported?.name || 'Usuario'}</td>
+                        <td>{report.reason}</td>
+                        <td>{report.description || '-'}</td>
+                        <td>
+                          <span className={`status-badge-report ${report.status}`}>
+                            {report.status === 'pending' ? 'Pendiente' :
+                             report.status === 'reviewed' ? 'Revisado' :
+                             report.status === 'dismissed' ? 'Desestimado' : 'Resuelto'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="report-actions">
+                            {report.status === 'pending' && (
+                              <>
+                                <button
+                                  className="btn-report-action dismiss"
+                                  onClick={async () => {
+                                    if (confirm('¿Desestimar este reporte?')) {
+                                      await updateReportStatus(report.id, 'dismissed')
+                                      setReports(await getAllReports())
+                                    }
+                                  }}
+                                  title="Desestimar"
+                                >
+                                  <X size={16} />
+                                </button>
+                                <button
+                                  className="btn-report-action resolve"
+                                  onClick={async () => {
+                                    if (confirm('¿Resolver este reporte?')) {
+                                      await updateReportStatus(report.id, 'resolved')
+                                      setReports(await getAllReports())
+                                    }
+                                  }}
+                                  title="Resolver"
+                                >
+                                  <Check size={16} />
+                                </button>
+                              </>
+                            )}
+                            {(report.status === 'reviewed' || report.status === 'dismissed') && (
+                              <button
+                                className="btn-report-action resolve"
+                                onClick={async () => {
+                                  await updateReportStatus(report.id, 'resolved')
+                                  setReports(await getAllReports())
+                                }}
+                                title="Resolver"
+                              >
+                                <Check size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

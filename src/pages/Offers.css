@@ -414,3 +414,33 @@
     font-size: 0.85rem;
     color: #6b7280;
 }
+
+.company-link {
+    color: #2d5016;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.company-link:hover {
+    color: #3d6a1f;
+}
+
+.btn-report-offer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-report-offer:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
