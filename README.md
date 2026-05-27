@@ -1,82 +1,104 @@
 # AgrícolaJobs
-Plataforma web para la búsqueda y gestión de ofertas de trabajo en el sector agrícola español, con enfoque en el sector olivarero. Conecta trabajadores del campo con empresas agrícolas.
-## Tech Stack
-- **Frontend**: React 19 + Vite + React Router DOM
-- **Backend**: FastAPI (Python) + Uvicorn
-- **Base de datos**: Supabase (PostgreSQL 15)
-- **Autenticación**: Supabase Auth (JWT)
-- **Estilos**: CSS vanilla con variables CSS
-- **Gráficos**: Recharts
-- **Iconos**: Lucide React
-- **Almacenamiento**: Supabase Storage (avatares, CVs)
-## Getting Started
+**Plataforma web de empleo para el sector agrícola español**
+AgrícolaJobs es una aplicación web que digitaliza el mercado laboral agrícola, conectando trabajadores del campo con empresas del sector. Desarrollada como proyecto del Ciclo Formativo de Desarrollo de Aplicaciones Web (DAW) en el IES Luis Carrillo de Sotomayor.
+---
+## Stack Tecnológico
+| Capa | Tecnología |
+|---|---|
+| Frontend | React 19, Vite 8, React Router DOM 7 |
+| Backend | FastAPI (Python 3.12), Uvicorn |
+| Base de Datos | Supabase (PostgreSQL 15) |
+| Autenticación | Supabase Auth (JWT + RLS) |
+| Almacenamiento | Supabase Storage (avatares, currículums) |
+| Visualización | Recharts, Lucide React |
+| Estilos | CSS vanilla con sistema de variables |
+---
+## Arquitectura
+┌─────────────────────────────────────────────────────┐
+│                    Cliente Web                       │
+│         React 19 · Vite · React Router               │
+│              authService · apiService                │
+└──────────────────────┬──────────────────────────────┘
+                       │ HTTP / JSON
+┌──────────────────────▼──────────────────────────────┐
+│                Backend API (FastAPI)                  │
+│          /api/auth · /api/offers · /api/stats         │
+└──────────────────────┬──────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│              Supabase (PostgreSQL 15)                 │
+│     RLS · Auth · Storage · Realtime · PL/pgSQL        │
+└─────────────────────────────────────────────────────┘
+---
+## Modelo de Datos
+**9 tablas principales:** `users`, `offers`, `applications`, `notifications`, `conversations`, `messages`, `reviews`, `reports`, `password_resets`
+- Claves primarias UUID (seguridad frente a enumeración)
+- Row Level Security para control de acceso granular por rol
+- Restricciones CHECK, UNIQUE y FOREIGN KEY con políticas de borrado en cascada
+- Triggers para creación automática de perfiles de usuario
+- Funciones PL/pgSQL para operaciones transaccionales
+---
+## Roles del Sistema
+| Rol | Responsabilidad |
+|---|---|
+| **Visitante** | Exploración de ofertas públicas y registro |
+| **Trabajador** | Aplicación a ofertas, gestión de perfil y CV, mensajería, valoraciones |
+| **Empresa** | Publicación de ofertas, gestión de candidatos, mensajería, valoraciones |
+| **Administrador** | Supervisión global: estadísticas, usuarios, ofertas, reportes |
+---
+## Funcionalidades
+- Registro y autenticación con validación en frontend y backend
+- CRUD completo de ofertas de empleo con búsqueda y filtros
+- Sistema de solicitudes con flujo pendiente → aceptada/rechazada
+- Mensajería en tiempo real entre empresa y trabajador
+- Sistema de notificaciones internas
+- Valoraciones con puntuación (1-5) y comentarios
+- Reportes y denuncias con gestión administrativa
+- Panel de administración con análisis de datos y gráficos
+- Almacenamiento de avatares y currículums en PDF
+- Recuperación de contraseña mediante token seguro
+- Diseño responsive adaptado a dispositivos móviles
+---
+## Instalación y Ejecución
+### Requisitos previos
+- Node.js ≥ 18
+- Python ≥ 3.10
+- Cuenta en Supabase (o instancia local)
+### Frontend
 ```bash
-# Clonar el repositorio
-git clone <repo-url>
-cd AgrícolaJobs
-# Instalar dependencias del frontend
 npm install
-# Iniciar servidor de desarrollo (frontend)
-npm run dev
-# Build para producción
-npm run build
-# Preview del build
-npm run preview
+npm run dev        # http://localhost:5173
+npm run build      # Genera /dist para producción
 Backend
 cd backend
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate      # Linux/Mac
+# venv\Scripts\activate       # Windows
 pip install -r app/requirements.txt
-uvicorn app.main:app --reload
-Estructura del Proyecto
-AgrícolaJobs/
-├── src/                 # Código fuente frontend (React)
-│   ├── components/      # Componentes reutilizables (Navbar, Footer, ReportModal)
-│   ├── pages/           # Páginas de la aplicación (Home, Login, Dashboard, etc.)
-│   ├── context/         # Contextos de React (AuthContext)
-│   ├── utils/           # Utilidades (supabaseClient, authService, apiService)
-│   ├── styles/          # Variables CSS globales
-│   ├── App.jsx          # Componente principal con enrutamiento
-│   └── main.jsx         # Punto de entrada
-├── backend/             # Código fuente backend (FastAPI)
-│   └── app/
-│       ├── main.py      # Punto de entrada FastAPI
-│       └── routes/      # Endpoints (auth, offers, stats)
-├── supabase-schema.sql  # Esquema completo de la base de datos
-├── Memoria_Proyecto.tex # Memoria del proyecto (LaTeX)
-└── img/                 # Imágenes y diagramas
-Características
-- Registro y autenticación con roles (trabajador, empresa, admin)
-- Publicación y gestión de ofertas de empleo agrícola
-- Búsqueda y filtrado de ofertas por ubicación y tipo
-- Solicitudes de empleo con estados (pendiente, aceptada, rechazada)
-- Sistema de mensajería en tiempo real entre empresa y trabajador
-- Notificaciones internas para eventos importantes
-- Valoraciones con sistema de estrellas (1-5) y comentarios
-- Reportes y denuncias gestionados por el administrador
-- Panel de administración con estadísticas y gráficos (Recharts)
-- Subida de avatar y currículum (PDF) a Supabase Storage
-- Recuperación de contraseña mediante token
-- Diseño responsive adaptado a dispositivos móviles
-Roles de Usuario
-Rol	Funcionalidades principales
-Visitante	Navegar ofertas públicas, registrarse
-Trabajador	Aplicar a ofertas, gestionar perfil y CV, chatear, valorar
-Empresa	Publicar ofertas, gestionar candidatos, chatear, valorar
-Admin	Estadísticas globales, gestionar usuarios, ofertas y reportes
-API Endpoints (Backend FastAPI)
-Método	Ruta
+uvicorn app.main:app --reload # http://127.0.0.1:8000
+Variables de Entorno
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-service-role-key
+API REST
+Método	Endpoint
 GET	/
 GET	/health
 GET	/api/stats/dashboard
 GET	/api/offers/
-GET	/api/offers/search?q=
+GET	/api/offers/search
 GET	/api/offers/filter
 POST	/api/auth/reset-password
-Base de Datos (Supabase/PostgreSQL)
-Tablas principales: users, offers, applications, notifications, conversations, messages, reviews, reports, password_resets
-- Row Level Security (RLS) para control de acceso por rol
-- UUIDs como claves primarias
-- Restricciones CHECK, UNIQUE y FOREIGN KEY
-- Triggers para creación automática de perfiles
-- Funciones PL/pgSQL para operaciones avanzadas
+Estructura del Proyecto
+AgrícolaJobs/
+├── src/                    # Frontend (React)
+│   ├── components/         # Componentes reutilizables
+│   ├── pages/              # Páginas de la aplicación
+│   ├── context/            # Contexto de autenticación
+│   ├── utils/              # Servicios y utilidades
+│   └── styles/             # Sistema de diseño
+├── backend/                # Backend (FastAPI)
+│   └── app/
+│       ├── main.py         # Configuración del servidor
+│       └── routes/         # Endpoints de la API
+├── supabase-schema.sql     # Esquema de base de datos
+└── img/                    # Recursos gráficos
