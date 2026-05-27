@@ -1,4 +1,4 @@
-# AgriculturalJobs
+# AgrícolaJobs
 Plataforma web para la búsqueda y gestión de ofertas de trabajo en el sector agrícola español, con enfoque en el sector olivarero. Conecta trabajadores del campo con empresas agrícolas.
 ## Tech Stack
 - **Frontend**: React 19 + Vite + React Router DOM
@@ -13,7 +13,7 @@ Plataforma web para la búsqueda y gestión de ofertas de trabajo en el sector a
 ```bash
 # Clonar el repositorio
 git clone <repo-url>
-cd AgriculturalJobs
+cd AgrícolaJobs
 # Instalar dependencias del frontend
 npm install
 # Iniciar servidor de desarrollo (frontend)
@@ -29,7 +29,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r app/requirements.txt
 uvicorn app.main:app --reload
 Estructura del Proyecto
-AgriculturalJobs/
+AgrícolaJobs/
 ├── src/                 # Código fuente frontend (React)
 │   ├── components/      # Componentes reutilizables (Navbar, Footer, ReportModal)
 │   ├── pages/           # Páginas de la aplicación (Home, Login, Dashboard, etc.)
