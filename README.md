@@ -1,6 +1,6 @@
 # AgrícolaJobs
 **Plataforma web de empleo para el sector agrícola español**
-AgrícolaJobs es una aplicación web que digitaliza el mercado laboral agrícola, conectando trabajadores del campo con empresas del sector. Desarrollada como proyecto del Ciclo Formativo de Desarrollo de Aplicaciones Web (DAW) en el IES Luis Carrillo de Sotomayor.
+AgrícolaJobs es una aplicación web que digitaliza el mercado laboral agrícola, conectando trabajadores del campo con empresas del sector.
 ---
 ## Stack Tecnológico
 | Capa | Tecnología |
