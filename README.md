@@ -41,7 +41,7 @@ AgrícolaJobs es una aplicación web que digitaliza el mercado laboral agrícola
 ## Roles del Sistema
 | Rol | Responsabilidad |
 |---|---|
-| **Visitante** | Exploración de ofertas públicas y registro |
+| **Visitante** | Exploración de la página principal y registro |
 | **Trabajador** | Aplicación a ofertas, gestión de perfil y CV, mensajería, valoraciones |
 | **Empresa** | Publicación de ofertas, gestión de candidatos, mensajería, valoraciones |
 | **Administrador** | Supervisión global: estadísticas, usuarios, ofertas, reportes |
