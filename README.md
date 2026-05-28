@@ -77,8 +77,9 @@ source venv/bin/activate      # Linux/Mac
 pip install -r app/requirements.txt
 uvicorn app.main:app --reload # http://127.0.0.1:8000
 Variables de Entorno
-SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_URL=https://smjbepcthtzqtkjjhttr.supabase.co
 SUPABASE_KEY=your-service-role-key
+VITE_API_URL=https://agricolajobs-api.onrender.com/api   # Solo producción (Vercel)
 API REST
 Método	Endpoint
 GET	/
@@ -102,3 +103,29 @@ AgrícolaJobs/
 │       └── routes/         # Endpoints de la API
 ├── supabase-schema.sql     # Esquema de base de datos
 └── img/                    # Recursos gráficos
+
+---
+## Despliegue en Producción
+
+### Frontend (Vercel)
+URL: https://agricola-jobs.vercel.app
+- Framework: Vite
+- Build: `npm run build` → `dist/`
+- Env: `VITE_API_URL = https://agricolajobs-api.onrender.com/api`
+
+### Backend (Render)
+URL: https://agricolajobs-api.onrender.com
+- Root: `backend/`
+- Runtime: Python 3
+- Build: `pip install -r app/requirements.txt`
+- Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Env: `SUPABASE_URL` + `SUPABASE_KEY`
+
+### CORS
+`backend/app/main.py` debe incluir los orígenes permitidos:
+```python
+allow_origins=[
+    "http://localhost:5173",
+    "https://agricola-jobs.vercel.app",
+]
+```
