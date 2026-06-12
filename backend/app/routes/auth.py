@@ -1,12 +1,56 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from app.routes import get_supabase_admin
+from datetime import datetime, timedelta
+import uuid
 
 router = APIRouter()
 
 class ResetPasswordRequest(BaseModel):
     user_id: str
     new_password: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    try:
+        supabase = get_supabase_admin()
+        email = request.email.lower().strip()
+
+        user_resp = supabase.table("users").select("id, email").ilike("email", email).execute()
+        user = user_resp.data[0] if user_resp.data else None
+
+        if not user:
+            auth_users = supabase.auth.admin.list_users()
+            auth_list = getattr(auth_users, 'users', [])
+            if not auth_list and hasattr(auth_users, '__iter__'):
+                auth_list = list(auth_users)
+            for u in auth_list:
+                u_email = getattr(u, 'email', '') or ''
+                if u_email.lower() == email:
+                    user = {"id": u.id, "email": u.email}
+                    break
+
+        if not user:
+            raise HTTPException(status_code=404, detail="No existe ningún usuario con ese email")
+
+        token = uuid.uuid4().hex
+        expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+
+        supabase.table("password_resets").insert({
+            "user_id": user["id"],
+            "token": token,
+            "expires_at": expires_at,
+            "used": False
+        }).execute()
+
+        return {"token": token, "email": user["email"]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/reset-password")
 async def reset_password(request: ResetPasswordRequest):

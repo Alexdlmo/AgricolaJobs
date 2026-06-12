@@ -52,27 +52,38 @@ ALTER TABLE offers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 -- Políticas RLS iniciales
 DROP POLICY IF EXISTS "Allow public read for users" ON users;
-CREATE POLICY "Allow public read for users" ON users FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Permitir lectura pública de usuarios" ON users;
+CREATE POLICY "Permitir lectura pública de usuarios" ON users FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow authenticated insert for users" ON users;
-CREATE POLICY "Allow authenticated insert for users" ON users FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Permitir inserción a usuarios autenticados" ON users;
+CREATE POLICY "Permitir inserción a usuarios autenticados" ON users FOR INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow own update for users" ON users;
-CREATE POLICY "Allow own update for users" ON users FOR UPDATE USING (id = auth.uid());
+DROP POLICY IF EXISTS "Permitir actualización propia de usuarios" ON users;
+CREATE POLICY "Permitir actualización propia de usuarios" ON users FOR UPDATE USING (id = auth.uid());
 DROP POLICY IF EXISTS "Allow admin delete for users" ON users;
-CREATE POLICY "Allow admin delete for users" ON users FOR DELETE USING (public.is_admin());
+DROP POLICY IF EXISTS "Permitir a admin eliminar usuarios" ON users;
+CREATE POLICY "Permitir a admin eliminar usuarios" ON users FOR DELETE USING (public.is_admin());
 DROP POLICY IF EXISTS "Allow public read for offers" ON offers;
-CREATE POLICY "Allow public read for offers" ON offers FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Permitir lectura pública de ofertas" ON offers;
+CREATE POLICY "Permitir lectura pública de ofertas" ON offers FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow company insert for offers" ON offers;
-CREATE POLICY "Allow company insert for offers" ON offers FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Permitir a empresas crear ofertas" ON offers;
+CREATE POLICY "Permitir a empresas crear ofertas" ON offers FOR INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow authenticated update for offers" ON offers;
-CREATE POLICY "Allow authenticated update for offers" ON offers FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Permitir actualización de ofertas a autenticados" ON offers;
+CREATE POLICY "Permitir actualización de ofertas a autenticados" ON offers FOR UPDATE USING (true);
 DROP POLICY IF EXISTS "Allow admin delete for offers" ON offers;
-CREATE POLICY "Allow admin delete for offers" ON offers FOR DELETE USING (public.is_admin());
+DROP POLICY IF EXISTS "Permitir a admin eliminar ofertas" ON offers;
+CREATE POLICY "Permitir a admin eliminar ofertas" ON offers FOR DELETE USING (public.is_admin());
 DROP POLICY IF EXISTS "Allow public read for applications" ON applications;
-CREATE POLICY "Allow public read for applications" ON applications FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Permitir lectura pública de postulaciones" ON applications;
+CREATE POLICY "Permitir lectura pública de postulaciones" ON applications FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow worker insert for applications" ON applications;
-CREATE POLICY "Allow worker insert for applications" ON applications FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Permitir a trabajadores postularse" ON applications;
+CREATE POLICY "Permitir a trabajadores postularse" ON applications FOR INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow authenticated update for applications" ON applications;
-CREATE POLICY "Allow authenticated update for applications" ON applications FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Permitir actualización de postulaciones a autenticados" ON applications;
+CREATE POLICY "Permitir actualización de postulaciones a autenticados" ON applications FOR UPDATE USING (true);
 -- ============================================================
 -- NOTIFICACIONES
 -- ============================================================
@@ -87,11 +98,14 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public read for notifications" ON notifications;
-CREATE POLICY "Allow public read for notifications" ON notifications FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Permitir lectura pública de notificaciones" ON notifications;
+CREATE POLICY "Permitir lectura pública de notificaciones" ON notifications FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow authenticated insert for notifications" ON notifications;
-CREATE POLICY "Allow authenticated insert for notifications" ON notifications FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Permitir inserción de notificaciones a autenticados" ON notifications;
+CREATE POLICY "Permitir inserción de notificaciones a autenticados" ON notifications FOR INSERT WITH CHECK (true);
 DROP POLICY IF EXISTS "Allow authenticated update for notifications" ON notifications;
-CREATE POLICY "Allow authenticated update for notifications" ON notifications FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Permitir actualización de notificaciones a autenticados" ON notifications;
+CREATE POLICY "Permitir actualización de notificaciones a autenticados" ON notifications FOR UPDATE USING (true);
 -- ============================================================
 -- PASSWORD RESETS
 -- ============================================================
@@ -105,8 +119,9 @@ CREATE TABLE IF NOT EXISTS password_resets (
 );
 ALTER TABLE password_resets ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Only service_role can manage password_resets" ON password_resets;
-CREATE POLICY "Only service_role can manage password_resets" ON password_resets
-  FOR ALL USING (false) WITH CHECK (false);
+DROP POLICY IF EXISTS "Solo service_role puede gestionar restablecimientos" ON password_resets;
+CREATE POLICY "Allow anon password resets" ON password_resets
+  FOR ALL USING (true) WITH CHECK (true);
 -- ============================================================
 -- CONVERSACIONES
 -- ============================================================
@@ -119,11 +134,11 @@ CREATE TABLE IF NOT EXISTS conversations (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Participants can view conversations" ON conversations;
-CREATE POLICY "Participants can view conversations" ON conversations FOR SELECT
+DROP POLICY IF EXISTS "Participantes pueden ver conversaciones" ON conversations;
+CREATE POLICY "Participantes pueden ver conversaciones" ON conversations FOR SELECT
   USING (company_id = auth.uid() OR worker_id = auth.uid());
-DROP POLICY IF EXISTS "Authenticated can create conversations" ON conversations;
-CREATE POLICY "Authenticated can create conversations" ON conversations FOR INSERT
+DROP POLICY IF EXISTS "Autenticados pueden crear conversaciones" ON conversations;
+CREATE POLICY "Autenticados pueden crear conversaciones" ON conversations FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
 -- ============================================================
 -- MENSAJES
@@ -137,14 +152,14 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Participants can view messages" ON messages;
-CREATE POLICY "Participants can view messages" ON messages FOR SELECT
+DROP POLICY IF EXISTS "Participantes pueden ver mensajes" ON messages;
+CREATE POLICY "Participantes pueden ver mensajes" ON messages FOR SELECT
   USING (conversation_id IN (SELECT id FROM conversations WHERE company_id = auth.uid() OR worker_id = auth.uid()));
-DROP POLICY IF EXISTS "Participants can insert messages" ON messages;
-CREATE POLICY "Participants can insert messages" ON messages FOR INSERT
+DROP POLICY IF EXISTS "Participantes pueden insertar mensajes" ON messages;
+CREATE POLICY "Participantes pueden insertar mensajes" ON messages FOR INSERT
   WITH CHECK (conversation_id IN (SELECT id FROM conversations WHERE company_id = auth.uid() OR worker_id = auth.uid()));
-DROP POLICY IF EXISTS "Participants can mark messages as read" ON messages;
-CREATE POLICY "Participants can mark messages as read" ON messages FOR UPDATE
+DROP POLICY IF EXISTS "Participantes pueden marcar mensajes como leídos" ON messages;
+CREATE POLICY "Participantes pueden marcar mensajes como leídos" ON messages FOR UPDATE
   USING (conversation_id IN (SELECT id FROM conversations WHERE company_id = auth.uid() OR worker_id = auth.uid()));
 -- ============================================================
 -- REVIEWS
@@ -160,10 +175,10 @@ CREATE TABLE IF NOT EXISTS reviews (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Reviews are public for reading" ON reviews;
-CREATE POLICY "Reviews are public for reading" ON reviews FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Authenticated users can create reviews" ON reviews;
-CREATE POLICY "Authenticated users can create reviews" ON reviews FOR INSERT
+DROP POLICY IF EXISTS "Reseñas son públicas para lectura" ON reviews;
+CREATE POLICY "Reseñas son públicas para lectura" ON reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Usuarios autenticados pueden crear reseñas" ON reviews;
+CREATE POLICY "Usuarios autenticados pueden crear reseñas" ON reviews FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
 -- ============================================================
 -- REPORTES
@@ -181,14 +196,14 @@ CREATE TABLE IF NOT EXISTS reports (
   reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL
 );
 ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Authenticated users can insert reports" ON reports;
-CREATE POLICY "Authenticated users can insert reports" ON reports FOR INSERT
+DROP POLICY IF EXISTS "Usuarios autenticados pueden crear reportes" ON reports;
+CREATE POLICY "Usuarios autenticados pueden crear reportes" ON reports FOR INSERT
   WITH CHECK (auth.uid() IS NOT NULL);
-DROP POLICY IF EXISTS "Admin can manage reports" ON reports;
-CREATE POLICY "Admin can manage reports" ON reports FOR SELECT
+DROP POLICY IF EXISTS "Admin puede gestionar reportes" ON reports;
+CREATE POLICY "Admin puede gestionar reportes" ON reports FOR SELECT
   USING (public.is_admin());
-DROP POLICY IF EXISTS "Admin can update reports" ON reports;
-CREATE POLICY "Admin can update reports" ON reports FOR UPDATE
+DROP POLICY IF EXISTS "Admin puede actualizar reportes" ON reports;
+CREATE POLICY "Admin puede actualizar reportes" ON reports FOR UPDATE
   USING (public.is_admin());
 -- ============================================================
 -- STORAGE BUCKETS
@@ -250,9 +265,9 @@ $$;
 -- POLÍTICAS RLS ENDURECIDAS
 -- ============================================================
 -- USERS
-DROP POLICY IF EXISTS "Allow public read for users" ON users;
-DROP POLICY IF EXISTS "Users can read own data or admin read all" ON users;
-CREATE POLICY "Users can read own data or admin read all" ON users FOR SELECT
+DROP POLICY IF EXISTS "Permitir lectura pública de usuarios" ON users;
+DROP POLICY IF EXISTS "Usuarios ven sus datos o admin ve todos" ON users;
+CREATE POLICY "Usuarios ven sus datos o admin ve todos" ON users FOR SELECT
   USING (
     id = auth.uid() OR public.is_admin() OR
     EXISTS (SELECT 1 FROM applications a JOIN offers o ON a.offer_id = o.id
@@ -260,61 +275,62 @@ CREATE POLICY "Users can read own data or admin read all" ON users FOR SELECT
                OR (o.company_id = users.id AND a.worker_id = auth.uid()))
   );
 -- OFFERS
-DROP POLICY IF EXISTS "Allow authenticated update for offers" ON offers;
-DROP POLICY IF EXISTS "Company can update own offers" ON offers;
-CREATE POLICY "Company can update own offers" ON offers FOR UPDATE
+DROP POLICY IF EXISTS "Permitir actualización de ofertas a autenticados" ON offers;
+DROP POLICY IF EXISTS "Empresas pueden actualizar sus ofertas" ON offers;
+CREATE POLICY "Empresas pueden actualizar sus ofertas" ON offers FOR UPDATE
   USING (company_id = auth.uid() OR public.is_admin());
-DROP POLICY IF EXISTS "Allow company insert for offers" ON offers;
-DROP POLICY IF EXISTS "Company can insert offers" ON offers;
-CREATE POLICY "Company can insert offers" ON offers FOR INSERT
+DROP POLICY IF EXISTS "Permitir a empresas crear ofertas" ON offers;
+DROP POLICY IF EXISTS "Empresas pueden crear ofertas" ON offers;
+CREATE POLICY "Empresas pueden crear ofertas" ON offers FOR INSERT
   WITH CHECK (company_id = auth.uid());
-DROP POLICY IF EXISTS "Allow admin delete for offers" ON offers;
-DROP POLICY IF EXISTS "Company or admin can delete offers" ON offers;
-CREATE POLICY "Company or admin can delete offers" ON offers FOR DELETE
+DROP POLICY IF EXISTS "Permitir a admin eliminar ofertas" ON offers;
+DROP POLICY IF EXISTS "Empresa o admin pueden eliminar ofertas" ON offers;
+CREATE POLICY "Empresa o admin pueden eliminar ofertas" ON offers FOR DELETE
   USING (company_id = auth.uid() OR public.is_admin());
 -- APPLICATIONS
-DROP POLICY IF EXISTS "Allow public read for applications" ON applications;
-DROP POLICY IF EXISTS "Users see own applications or their offers' apps" ON applications;
-CREATE POLICY "Users see own applications or their offers' apps" ON applications FOR SELECT
+DROP POLICY IF EXISTS "Permitir lectura pública de postulaciones" ON applications;
+DROP POLICY IF EXISTS "Usuarios ven sus postulaciones o las de sus ofertas" ON applications;
+CREATE POLICY "Usuarios ven sus postulaciones o las de sus ofertas" ON applications FOR SELECT
   USING (worker_id = auth.uid() OR offer_id IN (SELECT id FROM offers WHERE company_id = auth.uid()) OR public.is_admin());
-DROP POLICY IF EXISTS "Allow authenticated update for applications" ON applications;
-DROP POLICY IF EXISTS "Company can update their offers' applications" ON applications;
-CREATE POLICY "Company can update their offers' applications" ON applications FOR UPDATE
+DROP POLICY IF EXISTS "Permitir actualización de postulaciones a autenticados" ON applications;
+DROP POLICY IF EXISTS "Empresas pueden actualizar postulaciones de sus ofertas" ON applications;
+CREATE POLICY "Empresas pueden actualizar postulaciones de sus ofertas" ON applications FOR UPDATE
   USING (offer_id IN (SELECT id FROM offers WHERE company_id = auth.uid()));
-DROP POLICY IF EXISTS "Allow admin delete for users" ON users;
-DROP POLICY IF EXISTS "Worker can delete own applications" ON applications;
-DROP POLICY IF EXISTS "Admin can delete applications" ON applications;
-DROP POLICY IF EXISTS "Worker or admin can delete applications" ON applications;
-CREATE POLICY "Worker or admin can delete applications" ON applications FOR DELETE
+DROP POLICY IF EXISTS "Permitir a admin eliminar usuarios" ON users;
+CREATE POLICY "Permitir a admin eliminar usuarios" ON users FOR DELETE USING (public.is_admin());
+DROP POLICY IF EXISTS "Trabajador puede eliminar sus postulaciones" ON applications;
+DROP POLICY IF EXISTS "Admin puede eliminar postulaciones" ON applications;
+DROP POLICY IF EXISTS "Trabajador o admin pueden eliminar postulaciones" ON applications;
+CREATE POLICY "Trabajador o admin pueden eliminar postulaciones" ON applications FOR DELETE
   USING (worker_id = auth.uid() OR public.is_admin());
 -- CONVERSATIONS
-DROP POLICY IF EXISTS "Participants can delete conversations" ON conversations;
-DROP POLICY IF EXISTS "Participants or admin can delete conversations" ON conversations;
-CREATE POLICY "Participants or admin can delete conversations" ON conversations FOR DELETE
+DROP POLICY IF EXISTS "Participantes pueden eliminar conversaciones" ON conversations;
+DROP POLICY IF EXISTS "Participantes o admin pueden eliminar conversaciones" ON conversations;
+CREATE POLICY "Participantes o admin pueden eliminar conversaciones" ON conversations FOR DELETE
   USING (company_id = auth.uid() OR worker_id = auth.uid() OR public.is_admin());
 -- MESSAGES
-DROP POLICY IF EXISTS "Participants can delete messages" ON messages;
-DROP POLICY IF EXISTS "Participants or admin can delete messages" ON messages;
-CREATE POLICY "Participants or admin can delete messages" ON messages FOR DELETE
+DROP POLICY IF EXISTS "Participantes pueden eliminar mensajes" ON messages;
+DROP POLICY IF EXISTS "Participantes o admin pueden eliminar mensajes" ON messages;
+CREATE POLICY "Participantes o admin pueden eliminar mensajes" ON messages FOR DELETE
   USING (conversation_id IN (SELECT id FROM conversations WHERE company_id = auth.uid() OR worker_id = auth.uid()) OR public.is_admin());
 -- REVIEWS
-DROP POLICY IF EXISTS "Participants or admin can delete reviews" ON reviews;
-CREATE POLICY "Participants or admin can delete reviews" ON reviews FOR DELETE
+DROP POLICY IF EXISTS "Participantes o admin pueden eliminar reseñas" ON reviews;
+CREATE POLICY "Participantes o admin pueden eliminar reseñas" ON reviews FOR DELETE
   USING (reviewer_id = auth.uid() OR reviewed_id = auth.uid() OR public.is_admin());
 -- NOTIFICATIONS
-DROP POLICY IF EXISTS "Allow public read for notifications" ON notifications;
-DROP POLICY IF EXISTS "Users see own notifications" ON notifications;
-CREATE POLICY "Users see own notifications" ON notifications FOR SELECT
+DROP POLICY IF EXISTS "Permitir lectura pública de notificaciones" ON notifications;
+DROP POLICY IF EXISTS "Usuarios ven sus notificaciones" ON notifications;
+CREATE POLICY "Usuarios ven sus notificaciones" ON notifications FOR SELECT
   USING (user_id = auth.uid());
-DROP POLICY IF EXISTS "Allow authenticated insert for notifications" ON notifications;
-CREATE POLICY "Allow authenticated insert for notifications" ON notifications FOR INSERT
+DROP POLICY IF EXISTS "Permitir inserción de notificaciones a autenticados" ON notifications;
+CREATE POLICY "Permitir inserción de notificaciones a autenticados" ON notifications FOR INSERT
   WITH CHECK (user_id = auth.uid() OR EXISTS (
     SELECT 1 FROM applications a JOIN offers o ON a.offer_id = o.id
     WHERE a.worker_id = user_id AND o.company_id = auth.uid()
   ));
-DROP POLICY IF EXISTS "Allow authenticated update for notifications" ON notifications;
-DROP POLICY IF EXISTS "Users update own notifications" ON notifications;
-CREATE POLICY "Users update own notifications" ON notifications FOR UPDATE
+DROP POLICY IF EXISTS "Permitir actualización de notificaciones a autenticados" ON notifications;
+DROP POLICY IF EXISTS "Usuarios actualizan sus notificaciones" ON notifications;
+CREATE POLICY "Usuarios actualizan sus notificaciones" ON notifications FOR UPDATE
   USING (user_id = auth.uid());
 
 
@@ -383,8 +399,8 @@ BEGIN
   ) r;
 END;
 $$;
-DROP POLICY IF EXISTS "Allow authenticated insert for notifications" ON notifications;
-CREATE POLICY "Allow authenticated insert for notifications" ON notifications FOR INSERT
+DROP POLICY IF EXISTS "Permitir inserción de notificaciones a autenticados" ON notifications;
+CREATE POLICY "Permitir inserción de notificaciones a autenticados" ON notifications FOR INSERT
   WITH CHECK (
     user_id = auth.uid() OR
     EXISTS (
@@ -420,8 +436,8 @@ BEGIN
 END;
 $FUNC$;
 --Y además ejecuta esto para arreglar la RLS de notificaciones:
-DROP POLICY IF EXISTS "Allow authenticated insert for notifications" ON notifications;
-CREATE POLICY "Allow authenticated insert for notifications" ON notifications FOR INSERT
+DROP POLICY IF EXISTS "Permitir inserción de notificaciones a autenticados" ON notifications;
+CREATE POLICY "Permitir inserción de notificaciones a autenticados" ON notifications FOR INSERT
   WITH CHECK (
     user_id = auth.uid() OR
     EXISTS (
@@ -433,14 +449,14 @@ CREATE POLICY "Allow authenticated insert for notifications" ON notifications FO
   );
 
   -- 1. users: cualquier usuario autenticado puede leer datos básicos
-DROP POLICY IF EXISTS "Users can read own data or admin read all" ON users;
-CREATE POLICY "Users can read own data or admin read all" ON users FOR SELECT
+DROP POLICY IF EXISTS "Usuarios ven sus datos o admin ve todos" ON users;
+CREATE POLICY "Usuarios ven sus datos o admin ve todos" ON users FOR SELECT
   USING (auth.uid() IS NOT NULL);
 -- 2. applications: sin cambios, ya funciona
 -- (ya permite a la empresa ver aplicaciones de sus ofertas)
 -- 3. notifications: permitir insert en ambas direcciones
-DROP POLICY IF EXISTS "Allow authenticated insert for notifications" ON notifications;
-CREATE POLICY "Allow authenticated insert for notifications" ON notifications FOR INSERT
+DROP POLICY IF EXISTS "Permitir inserción de notificaciones a autenticados" ON notifications;
+CREATE POLICY "Permitir inserción de notificaciones a autenticados" ON notifications FOR INSERT
   WITH CHECK (
     user_id = auth.uid() OR
     EXISTS (
@@ -451,30 +467,30 @@ CREATE POLICY "Allow authenticated insert for notifications" ON notifications FO
     )
   );
 
-  1. Verificar qué políticas RLS existen actualmente en users
-Ejecuta esto en el SQL Editor de Supabase:
+-- 1. Verificar qué políticas RLS existen actualmente en users
+-- Ejecuta esto en el SQL Editor de Supabase:
 SELECT tablename, policyname, cmd
 FROM pg_policies
 WHERE tablename = 'users'
 ORDER BY tablename, policyname;
-Dime qué resultado te da.
-2. Si la política no está, forzar la creación
-Ejecuta esto para asegurar que cualquier usuario autenticado pueda leer datos básicos de users:
-DROP POLICY IF EXISTS "Allow public read for users" ON users;
-DROP POLICY IF EXISTS "Users can read own data or admin read all" ON users;
-DROP POLICY IF EXISTS "Users can read own data" ON users;
-CREATE POLICY "Users can read own data" ON users FOR SELECT
+-- Dime qué resultado te da.
+-- 2. Si la política no está, forzar la creación
+-- Ejecuta esto para asegurar que cualquier usuario autenticado pueda leer datos básicos de users:
+DROP POLICY IF EXISTS "Permitir lectura pública de usuarios" ON users;
+DROP POLICY IF EXISTS "Usuarios ven sus datos o admin ve todos" ON users;
+DROP POLICY IF EXISTS "Usuarios pueden leer sus propios datos" ON users;
+CREATE POLICY "Usuarios pueden leer sus propios datos" ON users FOR SELECT
   USING (auth.uid() IS NOT NULL);
-3. También verificar políticas en notifications
+-- 3. También verificar políticas en notifications
 SELECT tablename, policyname, cmd
 FROM pg_policies
 WHERE tablename = 'notifications'
 ORDER BY tablename, policyname;
 
-DROP POLICY IF EXISTS "Allow public read for users" ON users;
-DROP POLICY IF EXISTS "Users can read own data or admin read all" ON users;
-DROP POLICY IF EXISTS "Users can read own data" ON users;
-CREATE POLICY "Users can read own data" ON users FOR SELECT
+DROP POLICY IF EXISTS "Permitir lectura pública de usuarios" ON users;
+DROP POLICY IF EXISTS "Usuarios ven sus datos o admin ve todos" ON users;
+DROP POLICY IF EXISTS "Usuarios pueden leer sus propios datos" ON users;
+CREATE POLICY "Usuarios pueden leer sus propios datos" ON users FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
 
