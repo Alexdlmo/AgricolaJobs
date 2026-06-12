@@ -635,33 +635,18 @@ export const requestPasswordReset = async (email) => {
     throw new Error('El email no es válido')
   }
 
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select('id, email')
-    .ilike('email', email)
-    .single()
+  const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
 
-  if (userError || !user) {
-    throw new Error('No existe ningún usuario con ese email')
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}))
+    throw new Error(err.detail || 'No existe ningún usuario con ese email')
   }
 
-  const token = crypto.randomUUID()
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
-
-  const { error: insertError } = await supabase
-    .from('password_resets')
-    .insert({
-      user_id: user.id,
-      token: token,
-      expires_at: expiresAt,
-      used: false
-    })
-
-  if (insertError) {
-    throw new Error('Error al crear el token de recuperación')
-  }
-
-  return { token, email: user.email }
+  return await response.json()
 }
 
 export const validateResetToken = async (token) => {
