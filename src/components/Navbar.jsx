@@ -42,7 +42,7 @@ function Navbar() {
             <>
               <Link to="/offers">Ofertas</Link>
               <Link to="/dashboard">Panel</Link>
-              <Link to="/profile">Perfil</Link>
+              <Link to={user.role === 'admin' ? '/admin/profile' : '/profile'}>Perfil</Link>
             </>
           )}
           <div className="navbar-auth">

@@ -32,6 +32,7 @@ function Profile() {
 
   useEffect(() => {
     if (!authUser) { navigate('/login'); return }
+    if (authUser.role === 'admin') { navigate('/admin/profile', { replace: true }); return }
     setUser(authUser)
     setFormData({ 
       name: authUser.name || '', 
